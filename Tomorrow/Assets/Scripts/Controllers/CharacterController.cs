@@ -5,6 +5,8 @@ using UnityEngine;
 public class CharacterController : MonoBehaviour {
 
     private Rigidbody2D characterRigidbody;
+    private SpriteRenderer spriteRenderer;
+    private Animator animator;
 
     [SerializeField]
     private LayerMask floorLayerMask;
@@ -27,9 +29,13 @@ public class CharacterController : MonoBehaviour {
     private int maxExtraJumps;
     private int extraJumps;
 
+    private bool facingRight;
+
     
 	void Start () {
         characterRigidbody = GetComponent<Rigidbody2D>();
+        spriteRenderer = GetComponent<SpriteRenderer>();
+        animator = GetComponent<Animator>();
 	}
 	
 	void Update ()
@@ -51,6 +57,15 @@ public class CharacterController : MonoBehaviour {
     {
         horizontalInput = Input.GetAxis("Horizontal");
         wantsToJump = Input.GetButtonDown("Jump");
+
+        float absoluteHorizontal = Mathf.Abs(horizontalInput);
+        animator.SetFloat("xAxis", absoluteHorizontal);
+        animator.speed = absoluteHorizontal;
+
+        if (!facingRight && horizontalInput > 0 || facingRight && horizontalInput < 0)
+        {
+            FlipCharacter();
+        }
     }
 
     private void ApplyMotion()
@@ -85,5 +100,11 @@ public class CharacterController : MonoBehaviour {
     private void GetMotionData()
     {
         currentSpeed = characterRigidbody.velocity.magnitude;
+    }
+
+    private void FlipCharacter()
+    {
+        facingRight = !facingRight;
+        spriteRenderer.flipX = !facingRight;
     }
 }
