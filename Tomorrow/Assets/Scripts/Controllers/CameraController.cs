@@ -79,8 +79,6 @@ public class CameraController : MonoBehaviour {
         yShakeOffset = Mathf.PerlinNoise(originalSeed, continousShakeSeed) - 0.5f;
         continousShakeOffset = Vector3.right * xShakeOffset + Vector3.up * yShakeOffset;
         continousShakeOffset *= continousShakeMagnitude;
-
-        print(continousShakeOffset);
     }
 
     // Makes the camera shake
