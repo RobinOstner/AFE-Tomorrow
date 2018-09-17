@@ -21,12 +21,16 @@ public class CameraController : MonoBehaviour {
     
     private float originalSeed;
     private float continousSeed;
+    private float continousShakeSeed;
     private float xShakeOffset;
     private float yShakeOffset;
     private float offsetRoll;
     private Vector3 shakeOffset;
+    private Vector3 continousShakeOffset;
     public float shakeSpeed;
     public float shakeMagnitude;
+    public float continousShakeMagnitude;
+    public float continousShakeSpeed;
     public float shakeRoll;
     
     public float trauma;
@@ -41,6 +45,7 @@ public class CameraController : MonoBehaviour {
         
         originalSeed = Time.time;
         continousSeed = originalSeed;
+        continousShakeSeed = originalSeed;
 	}
 	
 	void Update () {
@@ -49,10 +54,11 @@ public class CameraController : MonoBehaviour {
     void FixedUpdate()
     {
         CameraFollow();
+        ContinousShake();
         CameraShake();
 
         // Add shake to camera
-        transform.position = cleanPosition + shakeOffset;
+        transform.position = cleanPosition + shakeOffset + continousShakeOffset;
     }
 
     // Makes the camera follow the character
@@ -63,6 +69,18 @@ public class CameraController : MonoBehaviour {
 
 
         cleanPosition = Vector3.Lerp(cleanPosition, target.position + lookAhead + offset + Vector3.forward*zOffset, Time.deltaTime * speed);
+    }
+
+    private void ContinousShake()
+    {
+        continousShakeSeed += Time.deltaTime * continousShakeSpeed;
+
+        xShakeOffset = Mathf.PerlinNoise(continousShakeSeed, originalSeed) - 0.5f;
+        yShakeOffset = Mathf.PerlinNoise(originalSeed, continousShakeSeed) - 0.5f;
+        continousShakeOffset = Vector3.right * xShakeOffset + Vector3.up * yShakeOffset;
+        continousShakeOffset *= continousShakeMagnitude;
+
+        print(continousShakeOffset);
     }
 
     // Makes the camera shake
@@ -77,7 +95,6 @@ public class CameraController : MonoBehaviour {
         // Clamp Trauma Level
         trauma = Mathf.Clamp01(trauma);
 
-
         // Add Time To Seed
         continousSeed += Time.deltaTime*(shakeSpeed*trauma);
         // Produce Random values
@@ -85,11 +102,11 @@ public class CameraController : MonoBehaviour {
         yShakeOffset = Mathf.PerlinNoise(originalSeed, continousSeed) - 0.5f;
         offsetRoll = Mathf.PerlinNoise(continousSeed, continousSeed) - 0.5f;
 
-
         // Calculate Offset
-        shakeOffset = Vector3.right * xShakeOffset + Vector3.up * yShakeOffset;
+        shakeOffset += Vector3.right * xShakeOffset + Vector3.up * yShakeOffset;
         // Magnify Offset
         shakeOffset *= shakeMagnitude * trauma * trauma;
+
         // Roll the camera
         transform.eulerAngles = Vector3.back * offsetRoll * shakeRoll * trauma * trauma;
     }
