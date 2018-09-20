@@ -111,7 +111,7 @@ public class CharacterController : MonoBehaviour {
         playerWantsToWalk = Input.GetButton("Run");
 
         targetVelocity = horizontalInput;
-        isWalking = playerWantsToWalk || movingBackwards;
+        isWalking = (playerWantsToWalk || movingBackwards) && isGrounded;
         targetVelocity *= isWalking ? walkingSpeed : runningSpeed;
     }
 
