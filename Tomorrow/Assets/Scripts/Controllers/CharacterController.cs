@@ -9,6 +9,11 @@ public class CharacterController : MonoBehaviour {
     private Animator animator;
 
     [SerializeField]
+    private SpriteRenderer weaponSpriteRenderer;
+    [SerializeField]
+    private SpriteRenderer upperArmSpriteRenderer;
+
+    [SerializeField]
     private LayerMask floorLayerMask;
 
     [SerializeField]
@@ -158,6 +163,8 @@ public class CharacterController : MonoBehaviour {
     {
         facingRight = !facingRight;
         spriteRenderer.flipX = !facingRight;
+        weaponSpriteRenderer.flipY = !facingRight;
+        upperArmSpriteRenderer.flipX = !facingRight;
         shoulder.transform.position -= Vector3.right*(shoulder.transform.position.x-transform.position.x)*2;
     }
 
