@@ -23,9 +23,17 @@ public class CharacterController : MonoBehaviour {
     private bool isGrounded;
 
     private float horizontalInput;
-    private float currentSpeed;
+    private bool playerWantsToWalk;
+    private bool isWalking;
+    private float currentVelocity;
     [SerializeField]
-    private float horizontalSpeed;
+    private float walkingSpeed;
+    [SerializeField]
+    private float runningSpeed;
+    [SerializeField]
+    private float acceleration;
+    private bool movingBackwards;
+    private float targetVelocity;
 
     [SerializeField]
     private float jumpForce;
@@ -85,12 +93,9 @@ public class CharacterController : MonoBehaviour {
         PositionArms();
 
         HandleCoolDown();
-
         HandleShooting();
-
         HandleKickBack();
-
-        GetMotionData();
+        HandleAnimation();
 	}
 
     void FixedUpdate()
@@ -103,31 +108,51 @@ public class CharacterController : MonoBehaviour {
         horizontalInput = Input.GetAxis("Horizontal");
         wantsToJump = Input.GetButtonDown("Jump");
         wantsToShoot = Input.GetButton("Fire1");
+        playerWantsToWalk = Input.GetButton("Run");
 
+        targetVelocity = horizontalInput;
+        isWalking = playerWantsToWalk || movingBackwards;
+        targetVelocity *= isWalking ? walkingSpeed : runningSpeed;
+    }
+
+    private void ApplyMotion()
+    {
+        currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * acceleration);
+        characterRigidbody.velocity = currentVelocity * Vector2.right + Vector2.up * characterRigidbody.velocity.y;
+    }
+
+    private void HandleAnimation()
+    {
         if (isGrounded)
         {
-            float absoluteHorizontal = Mathf.Abs(horizontalInput);
-            animator.speed = absoluteHorizontal < 0.01f ? 1 : absoluteHorizontal;
-
-            if (shootingDirection.x > 0 && horizontalInput > 0 || shootingDirection.x < 0 && horizontalInput < 0)
+            float absoluteSpeed = Mathf.Abs(currentVelocity);
+            if(absoluteSpeed < walkingSpeed)
             {
-                animator.SetFloat("xAxis", absoluteHorizontal);
+                isWalking = true;
+            }
+            absoluteSpeed /= isWalking ? walkingSpeed : runningSpeed;
+
+            animator.speed = absoluteSpeed < 0.01f ? 1 : absoluteSpeed;
+
+            if (!isWalking)
+            {
+                absoluteSpeed *= 2;
+            }
+
+            movingBackwards = !(shootingDirection.x > 0 && currentVelocity > 0 || shootingDirection.x < 0 && currentVelocity < 0);
+            if (!movingBackwards)
+            {
+                animator.SetFloat("xAxis", absoluteSpeed);
             }
             else
             {
-                animator.SetFloat("xAxis", -absoluteHorizontal);
+                animator.SetFloat("xAxis", -absoluteSpeed);
             }
         }
         else
         {
             animator.speed = 1;
         }
-    }
-
-    private void ApplyMotion()
-    {
-        Vector2 horizontalVelocity = Vector2.right * horizontalInput * horizontalSpeed;
-        characterRigidbody.velocity = horizontalVelocity + Vector2.up * characterRigidbody.velocity.y;
     }
 
     private void HandleJumps()
@@ -183,11 +208,6 @@ public class CharacterController : MonoBehaviour {
         {
             extraJumps = maxExtraJumps;
         }
-    }
-
-    private void GetMotionData()
-    {
-        currentSpeed = characterRigidbody.velocity.magnitude;
     }
 
     public void FlipCharacter()
