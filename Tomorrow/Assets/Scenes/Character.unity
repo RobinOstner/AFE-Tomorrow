@@ -493,17 +493,17 @@ Prefab:
     - target: {fileID: 20493846753900366, guid: fdf9e26c4af25a546b8e6d59c2116783,
         type: 2}
       propertyPath: m_BackGroundColor.r
-      value: 0.8161765
+      value: 0.21323532
       objectReference: {fileID: 0}
     - target: {fileID: 20493846753900366, guid: fdf9e26c4af25a546b8e6d59c2116783,
         type: 2}
       propertyPath: m_BackGroundColor.g
-      value: 0.8161765
+      value: 0.21323532
       objectReference: {fileID: 0}
     - target: {fileID: 20493846753900366, guid: fdf9e26c4af25a546b8e6d59c2116783,
         type: 2}
       propertyPath: m_BackGroundColor.b
-      value: 0.8161765
+      value: 0.21323532
       objectReference: {fileID: 0}
     - target: {fileID: 114976748115952990, guid: fdf9e26c4af25a546b8e6d59c2116783,
         type: 2}
@@ -514,6 +514,11 @@ Prefab:
         type: 2}
       propertyPath: continousShakeMagnitude
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 20493846753900366, guid: fdf9e26c4af25a546b8e6d59c2116783,
+        type: 2}
+      propertyPath: m_BackGroundColor.a
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: fdf9e26c4af25a546b8e6d59c2116783, type: 2}
