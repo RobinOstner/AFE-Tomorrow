@@ -21,6 +21,8 @@ public class BulletController : MonoBehaviour {
 	void Start () {
         rigidbody = GetComponent<Rigidbody2D>();
         rigidbody.velocity = direction * speed;
+
+        RotateInDirection();
     }
 	
 	// Update is called once per frame
@@ -32,6 +34,13 @@ public class BulletController : MonoBehaviour {
     {
         this.direction = direction;
         this.speed = speed;
+    }
+
+    private void RotateInDirection()
+    {
+        float angle = Vector3.Angle(Vector3.right, direction);
+        angle *= direction.y < 0 ? -1 : 1;
+        transform.Rotate(0, 0, angle);
     }
 
     private void SelfDestructTimer()

@@ -63,6 +63,10 @@ public class CharacterController : MonoBehaviour {
     private float shootingCoolDownTimer;
     [SerializeField]
     private float bulletSpeed;
+    
+    private Vector2 kickBackPosition;
+    public float kickBackAmount;
+    public float kickBackSpeed;
 
     void Start () {
         characterRigidbody = GetComponent<Rigidbody2D>();
@@ -84,6 +88,8 @@ public class CharacterController : MonoBehaviour {
 
         HandleShooting();
 
+        HandleKickBack();
+
         GetMotionData();
 	}
 
@@ -98,9 +104,24 @@ public class CharacterController : MonoBehaviour {
         wantsToJump = Input.GetButtonDown("Jump");
         wantsToShoot = Input.GetButton("Fire1");
 
-        float absoluteHorizontal = Mathf.Abs(horizontalInput);
-        animator.SetFloat("xAxis", absoluteHorizontal);
-        animator.speed = absoluteHorizontal;
+        if (isGrounded)
+        {
+            float absoluteHorizontal = Mathf.Abs(horizontalInput);
+            animator.speed = absoluteHorizontal;
+
+            if (shootingDirection.x > 0 && horizontalInput > 0 || shootingDirection.x < 0 && horizontalInput < 0)
+            {
+                animator.SetFloat("xAxis", absoluteHorizontal);
+            }
+            else
+            {
+                animator.SetFloat("xAxis", -absoluteHorizontal);
+            }
+        }
+        else
+        {
+            animator.speed = 1;
+        }
     }
 
     private void ApplyMotion()
@@ -114,6 +135,7 @@ public class CharacterController : MonoBehaviour {
         if (wantsToJump && isGrounded)
         {
             characterRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            animator.Play("Jump");
         }
         else if (wantsToJump && extraJumps > 0)
         {
@@ -131,11 +153,18 @@ public class CharacterController : MonoBehaviour {
         }
     }
 
+    private void HandleKickBack()
+    {
+        kickBackPosition = Vector2.Lerp(kickBackPosition, Vector2.zero, Time.deltaTime * kickBackSpeed);
+    }
+
     private void Shoot()
     {
         BulletController bullet = Instantiate(bulletPrefab, hand.transform.position, Quaternion.identity).GetComponent<BulletController>();
         bullet.Initialize(shootingDirection, bulletSpeed);
         Physics2D.IgnoreCollision(GetComponent<Collider2D>(), bullet.GetComponent<Collider2D>());
+
+        kickBackPosition = -shootingDirection.normalized * kickBackAmount;
     }
 
     private void HandleCoolDown()
@@ -147,6 +176,8 @@ public class CharacterController : MonoBehaviour {
     private void CheckGrounded()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheckTransform.position, groundCheckRadius, floorLayerMask);
+
+        animator.SetBool("Grounded", isGrounded);
 
         if (isGrounded)
         {
@@ -194,7 +225,7 @@ public class CharacterController : MonoBehaviour {
         upperArmAngle = shootingDirectionAngle - upperAngleOffset;
 
         Vector3 upperDirection = Quaternion.Euler(0, 0, -upperAngleOffset) * shootingDirection;
-        upperArm.transform.position = shoulder.transform.position + upperArm.transform.localScale.y * upperDirection / 2f;
+        upperArm.transform.position = (Vector3)kickBackPosition + shoulder.transform.position + upperArm.transform.localScale.y * upperDirection / 2f;
         upperArm.transform.rotation = Quaternion.identity;
         upperArm.transform.Rotate(Vector3.forward, upperArmAngle);
 
