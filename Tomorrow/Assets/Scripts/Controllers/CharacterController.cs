@@ -162,10 +162,13 @@ public class CharacterController : MonoBehaviour {
     public void FlipCharacter()
     {
         facingRight = !facingRight;
+        /*
         spriteRenderer.flipX = !facingRight;
         weaponSpriteRenderer.flipY = !facingRight;
         upperArmSpriteRenderer.flipX = !facingRight;
         shoulder.transform.position -= Vector3.right*(shoulder.transform.position.x-transform.position.x)*2;
+        */
+        transform.localScale = facingRight ? new Vector3(1, 1, 1) : new Vector3(-1,1,1);
     }
 
     private void CalculateShootingDirection()
