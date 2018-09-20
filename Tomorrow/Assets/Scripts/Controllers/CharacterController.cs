@@ -107,7 +107,7 @@ public class CharacterController : MonoBehaviour {
         if (isGrounded)
         {
             float absoluteHorizontal = Mathf.Abs(horizontalInput);
-            animator.speed = absoluteHorizontal;
+            animator.speed = absoluteHorizontal < 0.01f ? 1 : absoluteHorizontal;
 
             if (shootingDirection.x > 0 && horizontalInput > 0 || shootingDirection.x < 0 && horizontalInput < 0)
             {

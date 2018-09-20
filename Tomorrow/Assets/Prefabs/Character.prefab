@@ -386,6 +386,8 @@ MonoBehaviour:
     type: 2}
   shootingCoolDown: 0.1
   bulletSpeed: 50
+  kickBackAmount: 0.2
+  kickBackSpeed: 10
 --- !u!212 &212260171676929646
 SpriteRenderer:
   m_ObjectHideFlags: 1
