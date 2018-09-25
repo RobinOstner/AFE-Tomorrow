@@ -210,11 +210,34 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &11028812 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1661092526676022, guid: 84a9b83cf94d16c4cb976e72a553e187,
+    type: 2}
+  m_PrefabInternal: {fileID: 530178738}
+--- !u!114 &11028813
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 11028812}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c299a0af85e84e94fb7d22f8350319d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lowestPitch: 0.95
+  highestPitch: 1.05
+  shootingClip: {fileID: 8300000, guid: 81bafb20b78fb8c4d92bfa83ce2ef00c, type: 3}
+  walkingClip: {fileID: 8300000, guid: 1ff1355ce1ed81341ace1f4364911fb5, type: 3}
+  runningClip: {fileID: 8300000, guid: 1ff1355ce1ed81341ace1f4364911fb5, type: 3}
+  jumpingClip: {fileID: 8300000, guid: 6ee08ecd3fd3ef5448e488d4093f6627, type: 3}
+  landingClip: {fileID: 8300000, guid: 36ef04c3980cfcf479c2c7775dcc8e21, type: 3}
 --- !u!4 &73370513 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4364998386426606, guid: 84a9b83cf94d16c4cb976e72a553e187,
     type: 2}
-  m_PrefabInternal: {fileID: 1466243471}
+  m_PrefabInternal: {fileID: 530178738}
 --- !u!1 &192636664
 GameObject:
   m_ObjectHideFlags: 0
@@ -312,7 +335,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
---- !u!1001 &1466243471
+--- !u!1001 &530178738
 Prefab:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -519,6 +542,11 @@ Prefab:
         type: 2}
       propertyPath: m_BackGroundColor.a
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 81590926774691444, guid: fdf9e26c4af25a546b8e6d59c2116783,
+        type: 2}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: fdf9e26c4af25a546b8e6d59c2116783, type: 2}

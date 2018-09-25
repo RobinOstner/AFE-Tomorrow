@@ -7,6 +7,7 @@ public class CharacterController : MonoBehaviour {
     private Rigidbody2D characterRigidbody;
     private SpriteRenderer spriteRenderer;
     private Animator animator;
+    private CharacterAudioManager characterAudioManager;
 
     [SerializeField]
     private SpriteRenderer weaponSpriteRenderer;
@@ -80,6 +81,7 @@ public class CharacterController : MonoBehaviour {
         characterRigidbody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
+        characterAudioManager = GetComponent<CharacterAudioManager>();
 	}
 	
 	void Update ()
@@ -161,6 +163,7 @@ public class CharacterController : MonoBehaviour {
         {
             characterRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             animator.Play("Jump");
+            characterAudioManager.PlayJumpSound();
         }
         else if (wantsToJump && extraJumps > 0)
         {
@@ -186,10 +189,12 @@ public class CharacterController : MonoBehaviour {
     private void Shoot()
     {
         BulletController bullet = Instantiate(bulletPrefab, hand.transform.position, Quaternion.identity).GetComponent<BulletController>();
-        bullet.Initialize(shootingDirection, bulletSpeed);
         Physics2D.IgnoreCollision(GetComponent<Collider2D>(), bullet.GetComponent<Collider2D>());
+        bullet.Initialize(shootingDirection, bulletSpeed);
 
         kickBackPosition = -shootingDirection.normalized * kickBackAmount;
+
+        characterAudioManager.PlayShootingSound();
     }
 
     private void HandleCoolDown()
@@ -201,6 +206,11 @@ public class CharacterController : MonoBehaviour {
     private void CheckGrounded()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheckTransform.position, groundCheckRadius, floorLayerMask);
+
+        if(!animator.GetBool("Grounded") && isGrounded)
+        {
+            characterAudioManager.PlayLandingSound();
+        }
 
         animator.SetBool("Grounded", isGrounded);
 
