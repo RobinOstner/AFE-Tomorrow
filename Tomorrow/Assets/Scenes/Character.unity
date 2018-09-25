@@ -493,17 +493,17 @@ Prefab:
     - target: {fileID: 20493846753900366, guid: fdf9e26c4af25a546b8e6d59c2116783,
         type: 2}
       propertyPath: m_BackGroundColor.r
-      value: 0.21323532
+      value: 0.9338235
       objectReference: {fileID: 0}
     - target: {fileID: 20493846753900366, guid: fdf9e26c4af25a546b8e6d59c2116783,
         type: 2}
       propertyPath: m_BackGroundColor.g
-      value: 0.21323532
+      value: 0.9338235
       objectReference: {fileID: 0}
     - target: {fileID: 20493846753900366, guid: fdf9e26c4af25a546b8e6d59c2116783,
         type: 2}
       propertyPath: m_BackGroundColor.b
-      value: 0.21323532
+      value: 0.9338235
       objectReference: {fileID: 0}
     - target: {fileID: 114976748115952990, guid: fdf9e26c4af25a546b8e6d59c2116783,
         type: 2}
