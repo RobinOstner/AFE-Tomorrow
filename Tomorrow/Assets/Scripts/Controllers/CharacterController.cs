@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CharacterController : MonoBehaviour {
 
+    public float simulationSpeed;
+
     private Rigidbody2D characterRigidbody;
     private SpriteRenderer spriteRenderer;
     private Animator animator;
@@ -16,12 +18,22 @@ public class CharacterController : MonoBehaviour {
 
     [SerializeField]
     private LayerMask floorLayerMask;
+    [SerializeField]
+    private LayerMask wallLayerMask;
 
     [SerializeField]
     private Transform groundCheckTransform;
     [SerializeField]
     private float groundCheckRadius;
     private bool isGrounded;
+    [SerializeField]
+    private Transform wallCheckTransform;
+    [SerializeField]
+    private float wallCheckRadius;
+    private bool isTouchingWall;
+    private bool isSlidingOnWall;
+    private const float wallSlideLock = 0.5f;
+    private float wallSlideLockTimer;
 
     private float horizontalInput;
     private bool playerWantsToWalk;
@@ -32,17 +44,25 @@ public class CharacterController : MonoBehaviour {
     [SerializeField]
     private float runningSpeed;
     [SerializeField]
+    private float wallSlideSpeed;
+    [SerializeField]
+    private float wallSlideAcceleration;
+    [SerializeField]
     private float acceleration;
     private bool movingBackwards;
     private float targetVelocity;
 
+    private Vector2 additionalVelocity;
+
     [SerializeField]
     private float jumpForce;
+    [SerializeField]
+    private float wallJumpForce;
     private bool wantsToJump;
     [SerializeField]
     private int maxExtraJumps;
     private int extraJumps;
-
+    
     private bool facingRight = true;
 
     private Vector3 mousePosition;
@@ -77,6 +97,12 @@ public class CharacterController : MonoBehaviour {
     public float kickBackAmount;
     public float kickBackSpeed;
 
+    private bool isSliding;
+    
+    private float wallSlideDirectionLockTimer;
+    [SerializeField]
+    private float wallSlideDirectionLock;
+
     void Start () {
         characterRigidbody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -86,23 +112,58 @@ public class CharacterController : MonoBehaviour {
 	
 	void Update ()
     {
+        Time.timeScale = simulationSpeed;
+
         CheckGrounded();
+        CheckWall();
 
         HandleInputs();
+        HandleWallSlideLock();
+        HandleWallSlideDirectionLock();
         HandleJumps();
 
         CalculateShootingDirection();
         PositionArms();
 
         HandleCoolDown();
+        HandleWallSlideLock();
         HandleShooting();
         HandleKickBack();
         HandleAnimation();
+        HandleAdditionalVelocity();
 	}
 
     void FixedUpdate()
     {
         ApplyMotion();
+    }
+
+    private void ApplyMotion()
+    {
+        currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * acceleration);
+        Vector2 horizontal = currentVelocity * Vector2.right;
+
+        if(isSlidingOnWall && wallSlideDirectionLockTimer < wallSlideDirectionLock) { horizontal = Vector2.zero; }
+
+        characterRigidbody.velocity = horizontal + Vector2.up * characterRigidbody.velocity.y + additionalVelocity;
+
+        if (isSlidingOnWall)
+        {
+            float verticalSpeed = Mathf.Lerp(characterRigidbody.velocity.y, -wallSlideSpeed, Time.deltaTime * wallSlideAcceleration);
+            characterRigidbody.velocity = Vector2.right * characterRigidbody.velocity.x + Vector2.up * verticalSpeed;
+        }
+    }
+
+    private void HandleAdditionalVelocity()
+    {
+        if (isGrounded) { additionalVelocity /= 2; }
+
+        additionalVelocity = Vector2.Lerp(additionalVelocity, Vector2.zero, Time.deltaTime * 2);
+    }
+
+    private void HandleWallSlideLock()
+    {
+        wallSlideLockTimer -= Time.deltaTime;
     }
 
     private void HandleInputs()
@@ -117,28 +178,40 @@ public class CharacterController : MonoBehaviour {
         targetVelocity *= isWalking ? walkingSpeed : runningSpeed;
     }
 
-    private void ApplyMotion()
+    private void HandleWallSlideDirectionLock()
     {
-        currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * acceleration);
-        characterRigidbody.velocity = currentVelocity * Vector2.right + Vector2.up * characterRigidbody.velocity.y;
+        if(horizontalInput <= 0.5f && horizontalInput >= -0.5f)
+        {
+            wallSlideDirectionLockTimer = 0;
+        }
+
+        if(horizontalInput == -1 && facingRight && isSlidingOnWall || horizontalInput == 1 && !facingRight && isSlidingOnWall)
+        {
+            wallSlideDirectionLockTimer += Time.deltaTime;
+        }
+        else
+        {
+            wallSlideDirectionLockTimer = 0;
+        }
     }
 
     private void HandleAnimation()
     {
-        if (isGrounded)
+        string clipName = animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
+
+        if (isGrounded && !clipName.Equals("Slide"))
         {
             float absoluteSpeed = Mathf.Abs(currentVelocity);
-            if(absoluteSpeed < walkingSpeed)
+
+            if (absoluteSpeed < 0.1f) { absoluteSpeed = 0; }
+
+            if (absoluteSpeed < (walkingSpeed + runningSpeed)/2)
             {
-                isWalking = true;
+                animator.speed = absoluteSpeed < 0.01f ? 1 : absoluteSpeed/walkingSpeed;
             }
-            absoluteSpeed /= isWalking ? walkingSpeed : runningSpeed;
-
-            animator.speed = absoluteSpeed < 0.01f ? 1 : absoluteSpeed;
-
-            if (!isWalking)
+            else
             {
-                absoluteSpeed *= 2;
+                animator.speed = absoluteSpeed < 0.01f ? 1 : absoluteSpeed / runningSpeed;
             }
 
             movingBackwards = !(shootingDirection.x > 0 && currentVelocity > 0 || shootingDirection.x < 0 && currentVelocity < 0);
@@ -155,6 +228,22 @@ public class CharacterController : MonoBehaviour {
         {
             animator.speed = 1;
         }
+
+        if(ShouldPlaySlideAnimation())
+        {
+            isSliding = true;
+            animator.Play("Slide", 0);
+            animator.speed = 1;
+        }
+    }
+
+    private bool ShouldPlaySlideAnimation()
+    {
+        bool wantsStop = Mathf.Abs(targetVelocity) <= 0.2f && Mathf.Abs(currentVelocity) > walkingSpeed;
+
+        bool wantsWalk = playerWantsToWalk && Mathf.Abs(currentVelocity) > (walkingSpeed + runningSpeed)/2;
+
+        return isGrounded && (wantsStop || wantsWalk);
     }
 
     private void HandleJumps()
@@ -163,10 +252,20 @@ public class CharacterController : MonoBehaviour {
         {
             characterRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             animator.Play("Jump");
+            isSliding = false;
             characterAudioManager.PlayJumpSound();
         }
         else if (wantsToJump && extraJumps > 0)
         {
+            if (isSlidingOnWall)
+            {
+                Vector2 wallForce = Vector2.left * wallJumpForce;
+                wallForce *= facingRight ? 1 : -1;
+                additionalVelocity += wallForce;
+                wallSlideLockTimer = wallSlideLock;
+                animator.Play("Jump");
+            }
+
             characterRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             extraJumps--;
         }
@@ -220,15 +319,27 @@ public class CharacterController : MonoBehaviour {
         }
     }
 
+    private void CheckWall()
+    {
+        isTouchingWall = Physics2D.OverlapCircle(wallCheckTransform.position, wallCheckRadius, wallLayerMask);
+
+        bool before = isSlidingOnWall;
+
+        isSlidingOnWall = isTouchingWall && !isGrounded && wallSlideLockTimer <= 0;
+
+        if(!before && isSlidingOnWall)
+        {
+            animator.Play("Wall Slide");
+        }
+
+        extraJumps = maxExtraJumps;
+
+        animator.SetBool("Wall Slide", isSlidingOnWall);
+    }
+
     public void FlipCharacter()
     {
         facingRight = !facingRight;
-        /*
-        spriteRenderer.flipX = !facingRight;
-        weaponSpriteRenderer.flipY = !facingRight;
-        upperArmSpriteRenderer.flipX = !facingRight;
-        shoulder.transform.position -= Vector3.right*(shoulder.transform.position.x-transform.position.x)*2;
-        */
         transform.localScale = facingRight ? new Vector3(1, 1, 1) : new Vector3(-1,1,1);
     }
 
@@ -243,6 +354,11 @@ public class CharacterController : MonoBehaviour {
 
     private void PositionArms()
     {
+        if (!isSliding && !isSlidingOnWall && (shootingDirection.x < 0 && facingRight || shootingDirection.x >= 0 && !facingRight))
+        {
+            FlipCharacter();
+        }
+
         float shootingDirectionAngle = Vector3.Angle(shootingDirection, Vector3.down);
         if (shootingDirection.x < 0)
         {
@@ -250,6 +366,8 @@ public class CharacterController : MonoBehaviour {
         }
 
         upperAngleOffset = Mathf.Cos((shootingDirectionAngle - 90) / 180 * Mathf.PI) * 80;
+
+        if (isSlidingOnWall) { upperAngleOffset /= 2; }
 
         lowerArmAngle = shootingDirectionAngle;
         upperArmAngle = shootingDirectionAngle - upperAngleOffset;
@@ -263,10 +381,10 @@ public class CharacterController : MonoBehaviour {
         lowerArm.transform.position = elbow.transform.position + lowerArm.transform.localScale.y * shootingDirection / 2f;
         lowerArm.transform.rotation = Quaternion.identity;
         lowerArm.transform.Rotate(Vector3.forward, lowerArmAngle);
+    }
 
-        if (shootingDirection.x < 0 && facingRight || shootingDirection.x >= 0 && !facingRight)
-        {
-            FlipCharacter();
-        }
+    public void StoppedSliding()
+    {
+        isSliding = false;
     }
 }

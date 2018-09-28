@@ -49,13 +49,17 @@ public class CharacterAudioManager : MonoBehaviour {
         if (walkSoundTimer <= 0)
         {
             PlayClipOneShot(walkingClip);
-            walkSoundTimer = 0.1f;
+            walkSoundTimer = 0.2f;
         }
     }
 
     public void PlayRunningSound()
     {
-        PlayClipOneShot(runningClip);
+        if (walkSoundTimer <= 0)
+        {
+            PlayClipOneShot(runningClip);
+            walkSoundTimer = 0.2f;
+        }
     }
 
     public void PlayShootingSound()
