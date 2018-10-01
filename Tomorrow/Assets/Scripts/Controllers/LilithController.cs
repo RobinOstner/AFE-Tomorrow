@@ -26,10 +26,6 @@ public class LilithController : MonoBehaviour {
     private Transform groundCheckTransform;
     private bool isGrounded;
     [SerializeField]
-    private Transform headCheckTransform;
-    [SerializeField]
-    private bool isOnHead;
-    [SerializeField]
     private float groundCheckRadius;
     [SerializeField]
     private float surroundingCheckRadius;
@@ -47,6 +43,10 @@ public class LilithController : MonoBehaviour {
     [SerializeField]
     private float walkSpeed;
 
+    public bool flip;
+
+    private bool isFlipped;
+
     // Use this for initialization
     void Start () {
         rigidbody = GetComponent<Rigidbody2D>();
@@ -56,6 +56,11 @@ public class LilithController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+        if(flip && !isFlipped || !flip && isFlipped)
+        {
+            FlipCharacter();
+        }
+
         CheckSurroundings();
         CheckGrounded();
 
@@ -133,6 +138,10 @@ public class LilithController : MonoBehaviour {
         {
             rigidbody.velocity = Vector2.zero;
         }
+        else
+        {
+            transform.rotation = Quaternion.identity;
+        }
     }
 
     private void CalculateWalkDirection()
@@ -140,6 +149,7 @@ public class LilithController : MonoBehaviour {
         if (isGrounded)
         {
             walkDirection = Quaternion.Euler(0,0,-90) * downRay.normal;
+            walkDirection *= isFlipped ? -1 : 1;
             walkForwardRay.direction = walkDirection;
             walkForwardRay = CheckRay(walkForwardRay, false);
         }
@@ -157,7 +167,8 @@ public class LilithController : MonoBehaviour {
 
             if(walkForwardRay.distance <= floorDistance)
             {
-                transform.Rotate(0, 0, 5);
+                float angle = isFlipped ? -90 : 90;
+                transform.Rotate(0, 0, angle);
             }
             else
             {
@@ -178,5 +189,15 @@ public class LilithController : MonoBehaviour {
 
         Vector3 intersect = transform.position + transform.rotation*downRay.direction * downRay.distance;
         transform.position = intersect - transform.rotation*downRay.direction.normalized * floorDistance;
+    }
+
+    private void FlipCharacter()
+    {
+
+        isFlipped = !isFlipped;
+        transform.localScale = !isFlipped ? new Vector3(1, 1, 1) : new Vector3(-1, 1, 1);
+
+        frontRay.direction *= -1;
+        backRay.direction *= -1;
     }
 }
