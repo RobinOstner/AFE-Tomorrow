@@ -16,8 +16,16 @@ public class LilithController : MonoBehaviour {
     private Rigidbody2D rigidbody;
     private Animator animator;
 
+    private enum WalkModes { stopped, walking }
+    [SerializeField]
+    private WalkModes walkMode;
+    [SerializeField]
+    private float minWalkModeWaitTime = 1, maxWalkModeWaitTime = 5;
+
     [SerializeField]
     private LayerMask walkableLayerMask;
+    [SerializeField]
+    private LayerMask floorLayerMask;
 
     [SerializeField]
     private float floorDistance;
@@ -43,8 +51,9 @@ public class LilithController : MonoBehaviour {
     [SerializeField]
     private float walkSpeed;
 
-    public bool flip;
-
+    [SerializeField]
+    private bool walksOnFloor;
+    
     private bool isFlipped;
 
     // Use this for initialization
@@ -52,15 +61,12 @@ public class LilithController : MonoBehaviour {
         rigidbody = GetComponent<Rigidbody2D>();
 
         SetupSurroundingChecks();
+
+        StartCoroutine(MovementBehaviour());
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        if(flip && !isFlipped || !flip && isFlipped)
-        {
-            FlipCharacter();
-        }
-
         CheckSurroundings();
         CheckGrounded();
 
@@ -159,23 +165,71 @@ public class LilithController : MonoBehaviour {
         }
     }
 
+    private IEnumerator MovementBehaviour()
+    {
+        float waitTime = Random.Range(minWalkModeWaitTime, maxWalkModeWaitTime);
+        yield return new WaitForSeconds(waitTime);
+
+        if (walkMode == WalkModes.walking)
+        {
+            walkMode = WalkModes.stopped;
+
+            if(Random.Range(0,5) == 0)
+            {
+                FlipCharacter();
+            }
+        }
+        else
+        {
+            walkMode = WalkModes.walking;
+        }
+
+        StartCoroutine(MovementBehaviour());
+    }
+
     private void HandleMovement()
     {
         if(isGrounded)
         {
-            rigidbody.velocity = walkDirection * walkSpeed;
-
-            if(walkForwardRay.distance <= floorDistance)
+            switch (walkMode)
             {
-                float angle = isFlipped ? -90 : 90;
-                transform.Rotate(0, 0, angle);
-            }
-            else
-            {
-                transform.rotation = CalculateNormalRotation();
-                AdjustToFloorDistance();
+                case WalkModes.stopped:
+                    ReadjustPositionRotation();
+                    break;
+                case WalkModes.walking:
+                    Walk();
+                    break;
+                default:
+                    break;
             }
         }
+    }
+
+    private void Walk()
+    {
+        rigidbody.velocity = walkDirection * walkSpeed;
+
+        if(!walksOnFloor && walkForwardRay.layer == floorLayerMask)
+        {
+            FlipCharacter();
+            CalculateWalkDirection();
+        }
+
+        if (walkForwardRay.distance <= floorDistance)
+        {
+            float angle = isFlipped ? -90 : 90;
+            transform.Rotate(0, 0, angle);
+        }
+        else
+        {
+            ReadjustPositionRotation();
+        }
+    }
+
+    private void ReadjustPositionRotation()
+    {
+        transform.rotation = CalculateNormalRotation();
+        AdjustToFloorDistance();
     }
 
     private Quaternion CalculateNormalRotation()
@@ -193,7 +247,6 @@ public class LilithController : MonoBehaviour {
 
     private void FlipCharacter()
     {
-
         isFlipped = !isFlipped;
         transform.localScale = !isFlipped ? new Vector3(1, 1, 1) : new Vector3(-1, 1, 1);
 

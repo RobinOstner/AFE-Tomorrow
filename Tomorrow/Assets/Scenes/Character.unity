@@ -124,7 +124,7 @@ GameObject:
   - component: {fileID: 3822593}
   - component: {fileID: 3822592}
   - component: {fileID: 3822591}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: Ceiling
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -259,8 +259,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 67545092}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.98, y: 1.91, z: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 8.89, y: 1.91, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 408765526}
@@ -268,7 +268,7 @@ Transform:
   - {fileID: 203908033}
   m_Father: {fileID: 0}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
 --- !u!50 &67545094
 Rigidbody2D:
   serializedVersion: 4
@@ -376,15 +376,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 695f560ccc6181149ba0f7fee69b1013, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  walkMode: 0
+  minWalkModeWaitTime: 1
+  maxWalkModeWaitTime: 10
   walkableLayerMask:
     serializedVersion: 2
     m_Bits: 1280
+  floorLayerMask:
+    serializedVersion: 2
+    m_Bits: 256
   floorDistance: 0.5
   groundCheckTransform: {fileID: 231499918}
   groundCheckRadius: 0.1
   surroundingCheckRadius: 5
   minWallDistance: 0.5
-  walkSpeed: 2
+  walkSpeed: 1
+  walksOnFloor: 0
 --- !u!4 &73370513 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4364998386426606, guid: 84a9b83cf94d16c4cb976e72a553e187,
@@ -597,7 +604,7 @@ Transform:
   m_GameObject: {fileID: 408765525}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 1, z: 0.001}
   m_Children: []
   m_Father: {fileID: 67545093}
   m_RootOrder: 0
