@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CharacterController : MonoBehaviour {
 
+    public static CharacterController instance;
+
     public float simulationSpeed;
 
     private Rigidbody2D characterRigidbody;
@@ -20,6 +22,10 @@ public class CharacterController : MonoBehaviour {
     private LayerMask floorLayerMask;
     [SerializeField]
     private LayerMask wallLayerMask;
+    [SerializeField]
+    private LayerMask lilithLayerMask;
+    [SerializeField]
+    private LayerMask playerLayerMask;
 
     [SerializeField]
     private Transform groundCheckTransform;
@@ -104,10 +110,14 @@ public class CharacterController : MonoBehaviour {
     private float wallSlideDirectionLock;
 
     void Start () {
+        instance = this;
+
         characterRigidbody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         characterAudioManager = GetComponent<CharacterAudioManager>();
+
+        DisableLilithCollision();
 	}
 	
 	void Update ()
@@ -136,6 +146,13 @@ public class CharacterController : MonoBehaviour {
     void FixedUpdate()
     {
         ApplyMotion();
+    }
+
+    private void DisableLilithCollision()
+    {
+        int lilithLayerValue = (int)Mathf.Log(lilithLayerMask.value, 2);
+        int playerLayerValue = (int)Mathf.Log(playerLayerMask.value, 2);
+        Physics2D.IgnoreLayerCollision(lilithLayerValue, playerLayerValue);
     }
 
     private void ApplyMotion()

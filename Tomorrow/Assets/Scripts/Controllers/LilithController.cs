@@ -16,6 +16,7 @@ public class LilithController : MonoBehaviour {
     private Rigidbody2D rigidbody;
     private Animator animator;
 
+
     private enum WalkModes { stopped, walking }
     [SerializeField]
     private WalkModes walkMode;
@@ -56,6 +57,22 @@ public class LilithController : MonoBehaviour {
     
     private bool isFlipped;
 
+    private float hurtTimer;
+    [SerializeField]
+    private float maxHurtTimer = 0.5f;
+    private bool isHurt = false;
+
+    [SerializeField]
+    private float minVerticalDifferenceToAttack;
+    [SerializeField]
+    private float maxHorizontalDifferenceToAttack;
+
+    private Vector2 playerDirection;
+
+    private bool canAttackFromAbove;
+    [SerializeField]
+    private float attackFromAboveVelocity;
+
     // Use this for initialization
     void Start () {
         rigidbody = GetComponent<Rigidbody2D>();
@@ -66,7 +83,11 @@ public class LilithController : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+    {
+        HandleBulletHits();
+
+        CheckForPlayer();
         CheckSurroundings();
         CheckGrounded();
 
@@ -111,6 +132,26 @@ public class LilithController : MonoBehaviour {
         upRay = CheckRay(upRay, true);
     }
 
+    private void CheckForPlayer()
+    {
+        CharacterController player = CharacterController.instance;
+        Vector2 playerPosition = player.transform.position;
+
+        playerDirection = playerPosition - (Vector2)transform.position;
+
+        float verticalDifference = playerDirection.y;
+        float horizontalDifference = playerDirection.x;
+
+        if(verticalDifference <= minVerticalDifferenceToAttack && Mathf.Abs(horizontalDifference) < maxHorizontalDifferenceToAttack)
+        {
+            canAttackFromAbove = true;
+        }
+        else
+        {
+            canAttackFromAbove = false;
+        }
+    }
+
     private SurroundingCheck CheckRay(SurroundingCheck surroundingCheck, bool useLocalRotation)
     {
         surroundingCheck.distance = surroundingCheckRadius;
@@ -136,7 +177,15 @@ public class LilithController : MonoBehaviour {
 
     private void CheckGrounded()
     {
+        if (isHurt)
+        {
+            isGrounded = false;
+            rigidbody.isKinematic = false;
+            return;
+        }
+
         isGrounded = Physics2D.OverlapCircle(groundCheckTransform.position, groundCheckRadius, walkableLayerMask);
+
 
         rigidbody.isKinematic = isGrounded;
 
@@ -189,8 +238,15 @@ public class LilithController : MonoBehaviour {
 
     private void HandleMovement()
     {
+
         if(isGrounded)
         {
+            if (canAttackFromAbove)
+            {
+                AttackFromAbove();
+                return;
+            }
+
             switch (walkMode)
             {
                 case WalkModes.stopped:
@@ -203,6 +259,19 @@ public class LilithController : MonoBehaviour {
                     break;
             }
         }
+    }
+
+    private void AttackFromAbove()
+    {
+        rigidbody.velocity = playerDirection.normalized * attackFromAboveVelocity;
+        rigidbody.isKinematic = false;
+    }
+
+    private void HandleBulletHits()
+    {
+        hurtTimer -= Time.deltaTime;
+
+        isHurt = hurtTimer > 0;
     }
 
     private void Walk()
@@ -243,6 +312,11 @@ public class LilithController : MonoBehaviour {
 
         Vector3 intersect = transform.position + transform.rotation*downRay.direction * downRay.distance;
         transform.position = intersect - transform.rotation*downRay.direction.normalized * floorDistance;
+    }
+
+    public void Hit()
+    {
+        hurtTimer = maxHurtTimer;
     }
 
     private void FlipCharacter()

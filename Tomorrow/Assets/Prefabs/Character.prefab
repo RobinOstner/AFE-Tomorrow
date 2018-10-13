@@ -11,6 +11,21 @@ Prefab:
   m_ParentPrefab: {fileID: 0}
   m_RootGameObject: {fileID: 1661092526676022}
   m_IsPrefabParent: 1
+--- !u!1 &1053811191812366
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4338632137012732}
+  m_Layer: 12
+  m_Name: Wall Check
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
 --- !u!1 &1065993948570906
 GameObject:
   m_ObjectHideFlags: 1
@@ -19,7 +34,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4652962840972586}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Elbow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -35,7 +50,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4116637465619432}
   - component: {fileID: 212497123410183404}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Weapon
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -51,7 +66,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4719555869247632}
   - component: {fileID: 65112030287431364}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Upper Arm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -66,7 +81,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4659746359625962}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Ground Check
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -81,7 +96,7 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4985093213695882}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Shoulder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -97,7 +112,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4154625424874194}
   - component: {fileID: 65319772002331022}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Lower Arm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -119,7 +134,8 @@ GameObject:
   - component: {fileID: 82749479427398082}
   - component: {fileID: 81402715138891232}
   - component: {fileID: 114513550119184928}
-  m_Layer: 0
+  - component: {fileID: 114395806226336970}
+  m_Layer: 12
   m_Name: Character
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -134,8 +150,23 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4153124983441726}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Hand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1892110360038568
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4307539200139294}
+  m_Layer: 12
+  m_Name: Cam
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -150,7 +181,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4411585842770568}
   - component: {fileID: 212260171676929646}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: Upper Arm
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -198,6 +229,32 @@ Transform:
   m_Father: {fileID: 4985093213695882}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 90}
+--- !u!4 &4307539200139294
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1892110360038568}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.69, y: 0.16, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4364998386426606}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4338632137012732
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1053811191812366}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.717, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4364998386426606}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4364998386426606
 Transform:
   m_ObjectHideFlags: 1
@@ -205,11 +262,13 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1661092526676022}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0.09, y: -0.1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 4659746359625962}
+  - {fileID: 4338632137012732}
   - {fileID: 4985093213695882}
+  - {fileID: 4659746359625962}
+  - {fileID: 4307539200139294}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -250,7 +309,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4364998386426606}
-  m_RootOrder: 0
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4719555869247632
 Transform:
@@ -338,8 +397,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.21795893, y: -0.25311327}
-  m_Size: {x: 1.2452784, y: 2.1530724}
+  m_Offset: {x: 0.117135644, y: -0.25311327}
+  m_Size: {x: 1.3871081, y: 2.1530724}
   m_Direction: 0
 --- !u!81 &81402715138891232
 AudioListener:
@@ -421,7 +480,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 2
       time: 0
-      value: 0
+      value: 0.8
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -445,6 +504,24 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &114395806226336970
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1661092526676022}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c299a0af85e84e94fb7d22f8350319d3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lowestPitch: 0.95
+  highestPitch: 1.05
+  shootingClip: {fileID: 8300000, guid: 73aec06452306f743a06441c1862e9e8, type: 3}
+  walkingClip: {fileID: 8300000, guid: 1708db8e448daec4a9957e0706a36282, type: 3}
+  runningClip: {fileID: 8300000, guid: 1708db8e448daec4a9957e0706a36282, type: 3}
+  jumpingClip: {fileID: 8300000, guid: 4dd59da6c0e5d654fbcbdc1f95603189, type: 3}
+  landingClip: {fileID: 8300000, guid: dd6826caf875f094bafb24307c3ecdbc, type: 3}
 --- !u!114 &114513550119184928
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -456,17 +533,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c7be16c8b685214a8688f91bd6f6b24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  simulationSpeed: 1
   weaponSpriteRenderer: {fileID: 212497123410183404}
   upperArmSpriteRenderer: {fileID: 212260171676929646}
   floorLayerMask:
     serializedVersion: 2
     m_Bits: 256
+  wallLayerMask:
+    serializedVersion: 2
+    m_Bits: 1024
+  lilithLayerMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  playerLayerMask:
+    serializedVersion: 2
+    m_Bits: 4096
   groundCheckTransform: {fileID: 4659746359625962}
   groundCheckRadius: 0.1
+  wallCheckTransform: {fileID: 4338632137012732}
+  wallCheckRadius: 0.1
   walkingSpeed: 2
   runningSpeed: 10
-  acceleration: 5
+  wallSlideSpeed: -3
+  wallSlideAcceleration: 3
+  acceleration: 4
   jumpForce: 15
+  wallJumpForce: 10
   maxExtraJumps: 1
   shoulder: {fileID: 1455970660908224}
   elbow: {fileID: 1065993948570906}
@@ -479,6 +571,7 @@ MonoBehaviour:
   bulletSpeed: 50
   kickBackAmount: 0.2
   kickBackSpeed: 10
+  wallSlideDirectionLock: 0.3
 --- !u!212 &212260171676929646
 SpriteRenderer:
   m_ObjectHideFlags: 1
