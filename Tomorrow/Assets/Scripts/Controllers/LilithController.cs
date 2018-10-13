@@ -16,6 +16,8 @@ public class LilithController : MonoBehaviour {
     private Rigidbody2D rigidbody;
     private Animator animator;
 
+    [SerializeField]
+    private LayerMask playerLayerMask;
 
     private enum WalkModes { stopped, walking }
     [SerializeField]
@@ -63,15 +65,22 @@ public class LilithController : MonoBehaviour {
     private bool isHurt = false;
 
     [SerializeField]
-    private float minVerticalDifferenceToAttack;
+    private float minVerticalDifferenceToAttackFromAbove;
     [SerializeField]
-    private float maxHorizontalDifferenceToAttack;
+    private float maxVerticalDifferenceToAttackFromSide;
+    [SerializeField]
+    private float maxHorizontalDifferenceToAttackFromAbove;
+    [SerializeField]
+    private float maxHorizontalDifferenceToAttackFromSide;
 
     private Vector2 playerDirection;
 
     private bool canAttackFromAbove;
+    private bool canAttackFromSide;
     [SerializeField]
     private float attackFromAboveVelocity;
+    [SerializeField]
+    private float attackFromSideVelocity;
 
     // Use this for initialization
     void Start () {
@@ -87,8 +96,8 @@ public class LilithController : MonoBehaviour {
     {
         HandleBulletHits();
 
-        CheckForPlayer();
         CheckSurroundings();
+        CheckForPlayer();
         CheckGrounded();
 
         CalculateWalkDirection();
@@ -142,13 +151,23 @@ public class LilithController : MonoBehaviour {
         float verticalDifference = playerDirection.y;
         float horizontalDifference = playerDirection.x;
 
-        if(verticalDifference <= minVerticalDifferenceToAttack && Mathf.Abs(horizontalDifference) < maxHorizontalDifferenceToAttack)
+        if(verticalDifference <= minVerticalDifferenceToAttackFromAbove && Mathf.Abs(horizontalDifference) < maxHorizontalDifferenceToAttackFromAbove)
         {
             canAttackFromAbove = true;
         }
         else
         {
             canAttackFromAbove = false;
+        }
+
+        if(Mathf.Abs(verticalDifference) <= maxVerticalDifferenceToAttackFromSide && 
+            Mathf.Abs(horizontalDifference) <= maxHorizontalDifferenceToAttackFromSide)
+        {
+            canAttackFromSide = true;
+        }
+        else
+        {
+            canAttackFromSide = false;
         }
     }
 
@@ -238,12 +257,16 @@ public class LilithController : MonoBehaviour {
 
     private void HandleMovement()
     {
-
         if(isGrounded)
         {
             if (canAttackFromAbove)
             {
                 AttackFromAbove();
+                return;
+            }
+            if (canAttackFromSide)
+            {
+                AttackFromSide();
                 return;
             }
 
@@ -264,6 +287,12 @@ public class LilithController : MonoBehaviour {
     private void AttackFromAbove()
     {
         rigidbody.velocity = playerDirection.normalized * attackFromAboveVelocity;
+        rigidbody.isKinematic = false;
+    }
+
+    private void AttackFromSide()
+    {
+        rigidbody.velocity = playerDirection.normalized * attackFromSideVelocity + Vector2.up * attackFromSideVelocity;
         rigidbody.isKinematic = false;
     }
 
