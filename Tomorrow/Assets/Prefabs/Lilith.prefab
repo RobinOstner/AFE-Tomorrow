@@ -98,8 +98,8 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1711126435180334}
-  m_LocalRotation: {x: -0, y: -0, z: 0.7071069, w: -0.70710677}
-  m_LocalPosition: {x: -8.94, y: 2.98, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: 0.70710695, w: -0.70710665}
+  m_LocalPosition: {x: -8.91, y: 2.97, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4144304649527692}
@@ -250,6 +250,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 695f560ccc6181149ba0f7fee69b1013, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
   walkMode: 0
   minWalkModeWaitTime: 1
   maxWalkModeWaitTime: 2
@@ -261,15 +264,23 @@ MonoBehaviour:
     m_Bits: 256
   floorDistance: 0.5
   groundCheckTransform: {fileID: 4559258837332096}
-  groundCheckRadius: 0.1
+  middleIsGrounded: 0
+  frontIsGrounded: 0
+  backIsGrounded: 0
+  groundCheckRadius: 0.6
   surroundingCheckRadius: 5
   minWallDistance: 0.5
+  rotationDistance: 0.5
+  frontDownRayDistance: 0.5
   walkSpeed: 2
   walksOnFloor: 1
   maxHurtTimer: 0.5
-  minVerticalDifferenceToAttack: 0
-  maxHorizontalDifferenceToAttack: 2
+  minVerticalDifferenceToAttackFromAbove: 0
+  maxVerticalDifferenceToAttackFromSide: 3
+  maxHorizontalDifferenceToAttackFromAbove: 2
+  maxHorizontalDifferenceToAttackFromSide: 5
   attackFromAboveVelocity: 5
+  attackFromSideVelocity: 10
 --- !u!212 &212453356415510564
 SpriteRenderer:
   m_ObjectHideFlags: 1

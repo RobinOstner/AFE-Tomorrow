@@ -6,6 +6,7 @@ struct SurroundingCheck
 {
     public Ray2D ray;
     public Vector2 direction;
+    public Vector2 offset;
     public float distance;
     public LayerMask layer;
     public Vector2 normal;
@@ -35,7 +36,13 @@ public class LilithController : MonoBehaviour {
 
     [SerializeField]
     private Transform groundCheckTransform;
-    private bool isGrounded;
+    public bool isGrounded
+    {
+        get { return middleIsGrounded || frontIsGrounded || backIsGrounded; }
+    }
+    public bool middleIsGrounded;
+    public bool frontIsGrounded;
+    public bool backIsGrounded;
     [SerializeField]
     private float groundCheckRadius;
     [SerializeField]
@@ -43,8 +50,15 @@ public class LilithController : MonoBehaviour {
     [SerializeField]
     private float minWallDistance;
     private float distanceToWall;
+    [SerializeField]
+    private float rotationDistance;
+
+    [SerializeField]
+    private float frontDownRayDistance;
     
     private SurroundingCheck downRay = new SurroundingCheck();
+    private SurroundingCheck frontDownRay = new SurroundingCheck();
+    private SurroundingCheck backDownRay = new SurroundingCheck();
     private SurroundingCheck frontRay = new SurroundingCheck();
     private SurroundingCheck backRay = new SurroundingCheck();
     private SurroundingCheck upRay = new SurroundingCheck();
@@ -97,7 +111,6 @@ public class LilithController : MonoBehaviour {
         HandleBulletHits();
 
         CheckSurroundings();
-        CheckForPlayer();
         CheckGrounded();
 
         CalculateWalkDirection();
@@ -110,7 +123,15 @@ public class LilithController : MonoBehaviour {
         Gizmos.color = Color.green;
         Gizmos.DrawRay(transform.position, downRay.ray.direction * downRay.distance);
         Gizmos.DrawWireSphere(transform.position + (Vector3)downRay.ray.direction * downRay.distance, 0.25f);
-        
+
+        Gizmos.DrawRay(transform.position + transform.rotation * frontDownRay.offset * frontDownRayDistance, frontDownRay.ray.direction * frontDownRay.distance);
+        Gizmos.DrawWireSphere(transform.position + transform.rotation * frontDownRay.offset * frontDownRayDistance + (Vector3)frontDownRay.ray.direction * frontDownRay.distance, 0.25f);
+
+        Gizmos.DrawRay(transform.position + transform.rotation * backDownRay.offset * frontDownRayDistance, backDownRay.ray.direction * backDownRay.distance);
+        Gizmos.DrawWireSphere(transform.position + transform.rotation * backDownRay.offset * frontDownRayDistance + (Vector3)backDownRay.ray.direction * backDownRay.distance, 0.25f);
+
+        Gizmos.color = Color.cyan;
+
         Gizmos.DrawRay(transform.position, frontRay.ray.direction * frontRay.distance);
         Gizmos.DrawWireSphere(transform.position + (Vector3)frontRay.ray.direction * frontRay.distance, 0.25f);
         
@@ -128,6 +149,10 @@ public class LilithController : MonoBehaviour {
     private void SetupSurroundingChecks()
     {
         downRay.direction = Vector2.down;
+        frontDownRay.direction = Vector2.down;
+        frontDownRay.offset = Vector2.right * frontDownRayDistance;
+        backDownRay.direction = Vector2.down;
+        backDownRay.offset = Vector2.left * frontDownRayDistance;
         frontRay.direction = Vector2.right;
         backRay.direction = Vector2.left;
         upRay.direction = Vector2.up;
@@ -136,39 +161,11 @@ public class LilithController : MonoBehaviour {
     private void CheckSurroundings()
     {
         downRay = CheckRay(downRay, true);
+        frontDownRay = CheckRay(frontDownRay, true);
+        backDownRay = CheckRay(backDownRay, true);
         frontRay = CheckRay(frontRay, true);
         backRay = CheckRay(backRay, true);
         upRay = CheckRay(upRay, true);
-    }
-
-    private void CheckForPlayer()
-    {
-        CharacterController player = CharacterController.instance;
-        Vector2 playerPosition = player.transform.position;
-
-        playerDirection = playerPosition - (Vector2)transform.position;
-
-        float verticalDifference = playerDirection.y;
-        float horizontalDifference = playerDirection.x;
-
-        if(verticalDifference <= minVerticalDifferenceToAttackFromAbove && Mathf.Abs(horizontalDifference) < maxHorizontalDifferenceToAttackFromAbove)
-        {
-            canAttackFromAbove = true;
-        }
-        else
-        {
-            canAttackFromAbove = false;
-        }
-
-        if(Mathf.Abs(verticalDifference) <= maxVerticalDifferenceToAttackFromSide && 
-            Mathf.Abs(horizontalDifference) <= maxHorizontalDifferenceToAttackFromSide)
-        {
-            canAttackFromSide = true;
-        }
-        else
-        {
-            canAttackFromSide = false;
-        }
     }
 
     private SurroundingCheck CheckRay(SurroundingCheck surroundingCheck, bool useLocalRotation)
@@ -176,14 +173,14 @@ public class LilithController : MonoBehaviour {
         surroundingCheck.distance = surroundingCheckRadius;
         if (useLocalRotation)
         {
-            surroundingCheck.ray = new Ray2D(transform.position, transform.rotation * surroundingCheck.direction * surroundingCheckRadius);
+            surroundingCheck.ray = new Ray2D(transform.position + transform.rotation * surroundingCheck.offset, transform.rotation * surroundingCheck.direction * surroundingCheckRadius);
         }
         else
         {
-            surroundingCheck.ray = new Ray2D(transform.position, surroundingCheck.direction * surroundingCheckRadius);
+            surroundingCheck.ray = new Ray2D(transform.position + (Vector3)surroundingCheck.offset, surroundingCheck.direction * surroundingCheckRadius);
         }
 
-        RaycastHit2D result = Physics2D.Raycast(transform.position, surroundingCheck.ray.direction, surroundingCheckRadius, walkableLayerMask);
+        RaycastHit2D result = Physics2D.Raycast(transform.position + transform.rotation * surroundingCheck.offset, surroundingCheck.ray.direction, surroundingCheckRadius, walkableLayerMask);
         if (result.collider != null)
         {
             surroundingCheck.distance = result.distance;
@@ -196,19 +193,13 @@ public class LilithController : MonoBehaviour {
 
     private void CheckGrounded()
     {
-        if (isHurt)
-        {
-            isGrounded = false;
-            rigidbody.isKinematic = false;
-            return;
-        }
+        middleIsGrounded = downRay.distance <= groundCheckRadius;
+        frontIsGrounded = frontDownRay.distance <= groundCheckRadius;
+        backIsGrounded = backDownRay.distance <= groundCheckRadius;
 
-        isGrounded = Physics2D.OverlapCircle(groundCheckTransform.position, groundCheckRadius, walkableLayerMask);
+        rigidbody.isKinematic = isGrounded && !isHurt;
 
-
-        rigidbody.isKinematic = isGrounded;
-
-        if (isGrounded)
+        if (isGrounded && !isHurt)
         {
             rigidbody.velocity = Vector2.zero;
         }
@@ -257,19 +248,8 @@ public class LilithController : MonoBehaviour {
 
     private void HandleMovement()
     {
-        if(isGrounded)
+        if(isGrounded && !isHurt)
         {
-            if (canAttackFromAbove)
-            {
-                AttackFromAbove();
-                return;
-            }
-            if (canAttackFromSide)
-            {
-                AttackFromSide();
-                return;
-            }
-
             switch (walkMode)
             {
                 case WalkModes.stopped:
@@ -282,18 +262,6 @@ public class LilithController : MonoBehaviour {
                     break;
             }
         }
-    }
-
-    private void AttackFromAbove()
-    {
-        rigidbody.velocity = playerDirection.normalized * attackFromAboveVelocity;
-        rigidbody.isKinematic = false;
-    }
-
-    private void AttackFromSide()
-    {
-        rigidbody.velocity = playerDirection.normalized * attackFromSideVelocity + Vector2.up * attackFromSideVelocity;
-        rigidbody.isKinematic = false;
     }
 
     private void HandleBulletHits()
@@ -318,6 +286,20 @@ public class LilithController : MonoBehaviour {
             float angle = isFlipped ? -90 : 90;
             transform.Rotate(0, 0, angle);
         }
+        else if (!frontIsGrounded && !middleIsGrounded && backIsGrounded)
+        {
+            float angle = isFlipped ? 90 : -90;
+            Vector3 throughPoint = transform.position + (Vector3)downRay.ray.direction * rotationDistance;
+            Vector3 axis = new Vector3(0, 0, 1);
+            transform.RotateAround(throughPoint, axis, angle);
+        }
+        else if (!backIsGrounded && !middleIsGrounded && frontIsGrounded)
+        {
+            float angle = isFlipped ? 90 : -90;
+            Vector3 throughPoint = transform.position + (Vector3)downRay.ray.direction * rotationDistance;
+            Vector3 axis = new Vector3(0, 0, 1);
+            transform.RotateAround(throughPoint, axis, angle);
+        }
         else
         {
             ReadjustPositionRotation();
@@ -332,15 +314,16 @@ public class LilithController : MonoBehaviour {
 
     private Quaternion CalculateNormalRotation()
     {
+        Vector3 normal = (downRay.normal + frontDownRay.normal + backDownRay.normal) / 3f;
         return Quaternion.LookRotation(Vector3.forward, downRay.normal);
     }
-    
+
     private void AdjustToFloorDistance()
     {
         CheckSurroundings();
 
-        Vector3 intersect = transform.position + transform.rotation*downRay.direction * downRay.distance;
-        transform.position = intersect - transform.rotation*downRay.direction.normalized * floorDistance;
+        Vector3 intersect = transform.position + transform.rotation * downRay.direction * downRay.distance;
+        transform.position = intersect - transform.rotation * downRay.direction.normalized * floorDistance;
     }
 
     public void Hit()

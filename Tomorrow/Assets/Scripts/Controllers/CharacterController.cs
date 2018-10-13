@@ -256,7 +256,7 @@ public class CharacterController : MonoBehaviour {
 
     private bool ShouldPlaySlideAnimation()
     {
-        bool wantsStop = Mathf.Abs(targetVelocity) <= 0.2f && Mathf.Abs(currentVelocity) > walkingSpeed;
+        bool wantsStop = Mathf.Abs(targetVelocity) <= 0.2f && Mathf.Abs(currentVelocity) > (walkingSpeed + runningSpeed)*3/4;
 
         bool wantsWalk = playerWantsToWalk && Mathf.Abs(currentVelocity) > (walkingSpeed + runningSpeed)/2;
 
@@ -395,7 +395,7 @@ public class CharacterController : MonoBehaviour {
         upperArm.transform.Rotate(Vector3.forward, upperArmAngle);
 
         Vector3 lowerDirection = shootingDirection;
-        lowerArm.transform.position = elbow.transform.position + lowerArm.transform.localScale.y * shootingDirection / 2f;
+        lowerArm.transform.position = elbow.transform.position + lowerArm.transform.localScale.y * lowerDirection / 2f;
         lowerArm.transform.rotation = Quaternion.identity;
         lowerArm.transform.Rotate(Vector3.forward, lowerArmAngle);
     }
