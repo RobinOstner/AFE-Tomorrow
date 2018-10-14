@@ -8,6 +8,11 @@ public class LilithMovement : MonoBehaviour {
 
     private new Rigidbody2D rigidbody;
 
+    private Coroutine innerCornerCoroutine;
+    private Coroutine outerCornerCoroutine;
+
+    public bool isDead;
+    public bool isWalkingAroundCorner;
     public bool isAttached;
 
     public enum Surfaces { none, multiple, top, right, left, bottom }
@@ -39,26 +44,28 @@ public class LilithMovement : MonoBehaviour {
         surroundingAwareness = GetComponent<LilithSurroundingAwareness>();
         rigidbody = GetComponent<Rigidbody2D>();
         rigidbody.useFullKinematicContacts = true;
-
     }
 	
 	void Update () {
         HandleAttaching();
 
-        if (isAttached)
+        if (!isWalkingAroundCorner)
         {
-            WalkForward();
-        }
+            if (isAttached)
+            {
+                WalkForward();
+            }
 
-        if (surroundingAwareness.possibleCorners.Count > 0)
-        {
-            HandleCorners();
+            if (surroundingAwareness.possibleCorners.Count > 0)
+            {
+                HandleOuterCorner();
+            }
         }
 	}
 
     private void HandleAttaching()
     {
-        if (surroundingAwareness.canAttach)
+        if (!isDead && surroundingAwareness.canAttach)
         {
             rigidbody.velocity = Vector3.zero;
             rigidbody.isKinematic = true;
@@ -103,21 +110,26 @@ public class LilithMovement : MonoBehaviour {
         if (attachedSurface == Surfaces.left && surroundingAwareness.canAttachDown)
         {
             attachedSurface = Surfaces.bottom;
+            HandleInnerCorner();
         }
         if(attachedSurface == Surfaces.bottom && surroundingAwareness.canAttachRight)
         {
             attachedSurface = Surfaces.right;
+            HandleInnerCorner();
         }
         if(attachedSurface == Surfaces.right && surroundingAwareness.canAttachUp)
         {
             attachedSurface = Surfaces.top;
+            HandleInnerCorner();
         }
         if(attachedSurface == Surfaces.top && surroundingAwareness.canAttachLeft)
         {
             attachedSurface = Surfaces.left;
+            HandleInnerCorner();
         }
 
         ReAdjustToSurface();
+
     }
 
     private void ReAdjustToSurface()
@@ -139,9 +151,40 @@ public class LilithMovement : MonoBehaviour {
         rigidbody.velocity = walkDirection * walkSpeed;
     }
 
-    private void HandleCorners()
+    private void HandleOuterCorner()
     {
+        if (outerCornerCoroutine == null)
+        {
+            outerCornerCoroutine = StartCoroutine(OuterCornerCoroutine());
+        }
+    }
+
+    private IEnumerator OuterCornerCoroutine()
+    {
+        isWalkingAroundCorner = true;
+
+        yield return new WaitForSeconds(1);
+
         Vector3 difference = surroundingAwareness.possibleCorners[0] - transform.position;
         transform.position += difference * 2;
+
+        isWalkingAroundCorner = false;
+        outerCornerCoroutine = null;
+    }
+
+    private void HandleInnerCorner()
+    {
+        if(innerCornerCoroutine == null)
+        {
+            innerCornerCoroutine = StartCoroutine(InnerCornerCoroutine());
+        }
+    }
+
+    private IEnumerator InnerCornerCoroutine()
+    {
+        isWalkingAroundCorner = true;
+        yield return new WaitForSeconds(1);
+        isWalkingAroundCorner = false;
+        innerCornerCoroutine = null;
     }
 }
