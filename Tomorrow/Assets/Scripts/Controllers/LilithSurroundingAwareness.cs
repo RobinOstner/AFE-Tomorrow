@@ -24,6 +24,34 @@ public class LilithSurroundingAwareness : MonoBehaviour {
     [SerializeField]
     private float attachableDistance;
 
+    public enum Surfaces { none, multiple, top, right, left, bottom }
+    public Surfaces attachedSurface;
+
+    public Vector3 surfaceNormal
+    {
+        get
+        {
+            switch (attachedSurface)
+            {
+                case Surfaces.left:
+                    return Vector3.right;
+                case Surfaces.right:
+                    return Vector3.left;
+                case Surfaces.top:
+                    return Vector3.down;
+                case Surfaces.bottom:
+                    return Vector3.up;
+                default:
+                    return Vector3.forward;
+            }
+        }
+    }
+
+    [SerializeField]
+    private float maxJumpDistance;
+    [SerializeField]
+    private float minJumpDistance;
+
     public bool canAttachRight
     {
         get
@@ -60,6 +88,91 @@ public class LilithSurroundingAwareness : MonoBehaviour {
         }
     }
 
+    public JumpCheckRay rightJumpRay;
+    public JumpCheckRay leftJumpRay;
+    public JumpCheckRay upJumpRay;
+    public JumpCheckRay downJumpRay;
+    public JumpCheckRay upLeftJumpRay;
+    public JumpCheckRay upRightJumpRay;
+    public JumpCheckRay downLeftJumpRay;
+    public JumpCheckRay downRightJumpRay;
+
+    public bool canJumpRight
+    {
+        get
+        {
+            return rightJumpRay.canJump;
+        }
+    }
+    public bool canJumpLeft
+    {
+        get
+        {
+            return leftJumpRay.canJump;
+        }
+    }
+    public bool canJumpUp
+    {
+        get
+        {
+            return upJumpRay.canJump;
+        }
+    }
+    public bool canJumpDown
+    {
+        get
+        {
+            return downJumpRay.canJump;
+        }
+    }
+    public bool canJumpUpLeft
+    {
+        get
+        {
+            return upLeftJumpRay.canJump;
+        }
+    }
+    public bool canJumpUpRight
+    {
+        get
+        {
+            return upRightJumpRay.canJump;
+        }
+    }
+    public bool canJumpDownLeft
+    {
+        get
+        {
+            return downLeftJumpRay.canJump;
+        }
+    }
+    public bool canJumpDownRight
+    {
+        get
+        {
+            return downRightJumpRay.canJump;
+        }
+    }
+
+    public List<Vector3> possibleJumpLocations
+    {
+        get
+        {
+            List<Vector3> jumpLocations = new List<Vector3>();
+
+            if (canJumpLeft && !isWalkingDirection(leftJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)leftJumpRay.direction * leftJumpRay.distance); }
+            if (canJumpRight && !isWalkingDirection(rightJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)rightJumpRay.direction * rightJumpRay.distance); }
+            if (canJumpUp && !isWalkingDirection(upJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)upJumpRay.direction * upJumpRay.distance); }
+            if (canJumpDown && !isWalkingDirection(downJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)downJumpRay.direction * downJumpRay.distance); }
+            if (canJumpUpLeft && !isWalkingDirection(upLeftJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)upLeftJumpRay.direction * upLeftJumpRay.distance); }
+            if (canJumpUpRight && !isWalkingDirection(upRightJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)upRightJumpRay.direction * upRightJumpRay.distance); }
+            if (canJumpDownLeft && !isWalkingDirection(downLeftJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)downLeftJumpRay.direction * downLeftJumpRay.distance); }
+            if (canJumpDownRight && !isWalkingDirection(downRightJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)downRightJumpRay.direction * downRightJumpRay.distance); }
+
+            return jumpLocations;
+        }
+    }
+
     public List<Vector3> possibleCorners
     {
         get
@@ -86,11 +199,13 @@ public class LilithSurroundingAwareness : MonoBehaviour {
 	void Start () {
         InitializeCorners();
         SetupSurroundingCheckRays();
+        SetupJumpCheckRays();
 	}
 	
 	void Update () {
         CheckSurroundingRays();
         CheckCorners();
+        CheckJumpRays();
 	}
 
     private void OnDrawGizmos()
@@ -120,6 +235,23 @@ public class LilithSurroundingAwareness : MonoBehaviour {
         Gizmos.DrawWireSphere(topRightCorner, 0.1f);
         Gizmos.DrawWireSphere(bottomLeftCorner, 0.1f);
         Gizmos.DrawWireSphere(bottomRightCorner, 0.1f);
+
+        Gizmos.color = leftJumpRay.canJump ? Color. green :Color.blue;
+        Gizmos.DrawRay(transform.position, leftJumpRay.direction * leftJumpRay.distance);
+        Gizmos.color = rightJumpRay.canJump ? Color.green : Color.blue;
+        Gizmos.DrawRay(transform.position, rightJumpRay.direction * rightJumpRay.distance);
+        Gizmos.color = upJumpRay.canJump ? Color.green : Color.blue;
+        Gizmos.DrawRay(transform.position, upJumpRay.direction * upJumpRay.distance);
+        Gizmos.color = downJumpRay.canJump ? Color.green : Color.blue;
+        Gizmos.DrawRay(transform.position, downJumpRay.direction * downJumpRay.distance);
+        Gizmos.color = upLeftJumpRay.canJump ? Color.green : Color.blue;
+        Gizmos.DrawRay(transform.position, upLeftJumpRay.direction * upLeftJumpRay.distance);
+        Gizmos.color = upRightJumpRay.canJump ? Color.green : Color.blue;
+        Gizmos.DrawRay(transform.position, upRightJumpRay.direction * upRightJumpRay.distance);
+        Gizmos.color = downLeftJumpRay.canJump ? Color.green : Color.blue;
+        Gizmos.DrawRay(transform.position, downLeftJumpRay.direction * downLeftJumpRay.distance);
+        Gizmos.color = downRightJumpRay.canJump ? Color.green : Color.blue;
+        Gizmos.DrawRay(transform.position, downRightJumpRay.direction * downRightJumpRay.distance);
     }
 
     private void SetupSurroundingCheckRays()
@@ -136,6 +268,39 @@ public class LilithSurroundingAwareness : MonoBehaviour {
         downCheckRay.direction = Vector2.down;
         downCheckRay.offset = Vector2.down * bodySize;
         downCheckRay.color = Color.magenta;
+    }
+
+    private void SetupJumpCheckRays()
+    {
+        rightJumpRay.direction = Vector2.right;
+        rightJumpRay.maxJumpDistance = maxJumpDistance;
+        rightJumpRay.minJumpDistance = minJumpDistance;
+        leftJumpRay.direction = Vector2.left;
+        leftJumpRay.maxJumpDistance = maxJumpDistance;
+        leftJumpRay.minJumpDistance = minJumpDistance;
+        upJumpRay.direction = Vector2.up;
+        upJumpRay.maxJumpDistance = maxJumpDistance;
+        upJumpRay.minJumpDistance = minJumpDistance;
+        downJumpRay.direction = Vector2.down;
+        downJumpRay.maxJumpDistance = maxJumpDistance;
+        downJumpRay.minJumpDistance = minJumpDistance;
+        upLeftJumpRay.direction = new Vector2(-1, 1).normalized;
+        upLeftJumpRay.maxJumpDistance = maxJumpDistance;
+        upLeftJumpRay.minJumpDistance = minJumpDistance;
+        upRightJumpRay.direction = new Vector2(1,1).normalized;
+        upRightJumpRay.maxJumpDistance = maxJumpDistance;
+        upRightJumpRay.minJumpDistance = minJumpDistance;
+        downLeftJumpRay.direction = new Vector2(-1,-1).normalized;
+        downLeftJumpRay.maxJumpDistance = maxJumpDistance;
+        downLeftJumpRay.minJumpDistance = minJumpDistance;
+        downRightJumpRay.direction = new Vector2(1,-1).normalized;
+        downRightJumpRay.maxJumpDistance = maxJumpDistance;
+        downRightJumpRay.minJumpDistance = minJumpDistance;
+    }
+
+    private bool isWalkingDirection(Vector3 jumpDirection)
+    {
+        return (jumpDirection == Quaternion.Euler(0, 0, 90) * surfaceNormal || jumpDirection == Quaternion.Euler(0, 0, -90) * surfaceNormal);
     }
 
     private void InitializeCorners()
@@ -158,6 +323,18 @@ public class LilithSurroundingAwareness : MonoBehaviour {
         leftCheckRay.CheckRay(transform, attachableDistance, walkableLayerMask);
         upCheckRay.CheckRay(transform, attachableDistance, walkableLayerMask);
         downCheckRay.CheckRay(transform, attachableDistance, walkableLayerMask);
+    }
+
+    private void CheckJumpRays()
+    {
+        rightJumpRay.CheckRay(transform, walkableLayerMask);
+        leftJumpRay.CheckRay(transform, walkableLayerMask);
+        upJumpRay.CheckRay(transform, walkableLayerMask);
+        downJumpRay.CheckRay(transform, walkableLayerMask);
+        upLeftJumpRay.CheckRay(transform, walkableLayerMask);
+        upRightJumpRay.CheckRay(transform, walkableLayerMask);
+        downLeftJumpRay.CheckRay(transform, walkableLayerMask);
+        downRightJumpRay.CheckRay(transform, walkableLayerMask);
     }
 
     private void CheckCorners()

@@ -35,6 +35,12 @@ TextureImporter:
     21300056: Mech_Proto_28
     21300058: Mech_Proto_29
     21300060: Mech_Proto_30
+    21300062: Mech_Proto_31
+    21300064: Mech_Proto_32
+    21300066: Mech_Proto_33
+    21300068: Mech_Proto_34
+    21300070: Mech_Proto_35
+    21300072: Mech_Proto_36
   externalObjects: {}
   serializedVersion: 4
   mipmaps:
@@ -89,7 +95,7 @@ TextureImporter:
   textureFormatSet: 0
   platformSettings:
   - buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
@@ -99,7 +105,7 @@ TextureImporter:
     overridden: 0
     androidETC2FallbackOverride: 0
   - buildTarget: Standalone
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 0
@@ -116,7 +122,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1920
+        y: 2304
         width: 64
         height: 64
       alignment: 0
@@ -130,7 +136,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1856
+        y: 2240
         width: 64
         height: 64
       alignment: 0
@@ -144,7 +150,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1792
+        y: 2176
         width: 64
         height: 64
       alignment: 0
@@ -158,7 +164,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1728
+        y: 2112
         width: 64
         height: 64
       alignment: 0
@@ -172,7 +178,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1664
+        y: 2048
         width: 64
         height: 64
       alignment: 0
@@ -186,7 +192,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1600
+        y: 1984
         width: 64
         height: 64
       alignment: 0
@@ -200,7 +206,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1536
+        y: 1920
         width: 64
         height: 64
       alignment: 0
@@ -214,7 +220,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1472
+        y: 1856
         width: 64
         height: 64
       alignment: 0
@@ -228,7 +234,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1408
+        y: 1792
         width: 64
         height: 64
       alignment: 0
@@ -242,7 +248,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1344
+        y: 1728
         width: 64
         height: 64
       alignment: 0
@@ -256,7 +262,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1280
+        y: 1664
         width: 64
         height: 64
       alignment: 0
@@ -270,7 +276,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1216
+        y: 1600
         width: 64
         height: 64
       alignment: 0
@@ -284,7 +290,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1152
+        y: 1536
         width: 64
         height: 64
       alignment: 0
@@ -298,7 +304,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1088
+        y: 1472
         width: 64
         height: 64
       alignment: 0
@@ -312,7 +318,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 1024
+        y: 1408
         width: 64
         height: 64
       alignment: 0
@@ -326,7 +332,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 960
+        y: 1344
         width: 64
         height: 64
       alignment: 0
@@ -340,7 +346,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 896
+        y: 1280
         width: 64
         height: 64
       alignment: 0
@@ -354,7 +360,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 832
+        y: 1216
         width: 64
         height: 64
       alignment: 0
@@ -368,7 +374,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 768
+        y: 1152
         width: 64
         height: 64
       alignment: 0
@@ -382,7 +388,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 704
+        y: 1088
         width: 64
         height: 64
       alignment: 0
@@ -396,7 +402,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 640
+        y: 1024
         width: 64
         height: 64
       alignment: 0
@@ -410,7 +416,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 576
+        y: 960
         width: 64
         height: 64
       alignment: 0
@@ -424,7 +430,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 512
+        y: 896
         width: 64
         height: 64
       alignment: 0
@@ -438,7 +444,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 448
+        y: 832
         width: 64
         height: 64
       alignment: 0
@@ -452,7 +458,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 384
+        y: 768
         width: 64
         height: 64
       alignment: 0
@@ -466,7 +472,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 320
+        y: 704
         width: 64
         height: 64
       alignment: 0
@@ -480,7 +486,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 256
+        y: 640
         width: 64
         height: 64
       alignment: 0
@@ -494,7 +500,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 192
+        y: 576
         width: 64
         height: 64
       alignment: 0
@@ -508,7 +514,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 128
+        y: 512
         width: 64
         height: 64
       alignment: 0
@@ -522,7 +528,7 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 0
-        y: 64
+        y: 448
         width: 64
         height: 64
       alignment: 0
@@ -533,6 +539,90 @@ TextureImporter:
       tessellationDetail: 0
     - serializedVersion: 2
       name: Mech_Proto_30
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 384
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Mech_Proto_31
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 320
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Mech_Proto_32
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 256
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Mech_Proto_33
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 192
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Mech_Proto_34
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 128
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Mech_Proto_35
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 64
+        width: 64
+        height: 64
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+    - serializedVersion: 2
+      name: Mech_Proto_36
       rect:
         serializedVersion: 2
         x: 0

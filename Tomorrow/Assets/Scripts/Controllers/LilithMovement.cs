@@ -14,31 +14,15 @@ public class LilithMovement : MonoBehaviour {
     public bool isDead;
     public bool isWalkingAroundCorner;
     public bool isAttached;
+    public bool isJumping;
 
-    public enum Surfaces { none, multiple, top, right, left, bottom }
-    public Surfaces attachedSurface;
+    public float jumpLockTime;
 
-    public Vector3 surfaceNormal
-    {
-        get
-        {
-            switch (attachedSurface)
-            {
-                case Surfaces.left:
-                    return Vector3.right;
-                case Surfaces.right:
-                    return Vector3.left;
-                case Surfaces.top:
-                    return Vector3.down;
-                case Surfaces.bottom:
-                    return Vector3.up;
-                default:
-                    return Vector3.forward;
-            }
-        }
-    }
+    public float jumpProbability;
 
     public float walkSpeed;
+
+    public float jumpSpeed;
     
 	void Start () {
         surroundingAwareness = GetComponent<LilithSurroundingAwareness>();
@@ -47,16 +31,24 @@ public class LilithMovement : MonoBehaviour {
     }
 	
 	void Update () {
-        HandleAttaching();
+        if (!isJumping)
+        {
+            HandleAttaching();
+        }
 
         if (!isWalkingAroundCorner)
         {
             if (isAttached)
             {
-                WalkForward();
+                HandleJumping();
+
+                if (!isJumping)
+                {
+                    WalkForward();
+                }
             }
 
-            if (surroundingAwareness.possibleCorners.Count > 0)
+            if (!isJumping && surroundingAwareness.possibleCorners.Count > 0)
             {
                 HandleOuterCorner();
             }
@@ -77,27 +69,54 @@ public class LilithMovement : MonoBehaviour {
         {
             rigidbody.isKinematic = false;
             isAttached = false;
-            attachedSurface = Surfaces.none;
+            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.none;
         }
+    }
+
+    private void HandleJumping()
+    {
+        if(surroundingAwareness.possibleJumpLocations.Count > 0)
+        {
+            if(Random.Range(0f, 100f) <= jumpProbability)
+            {
+                isJumping = true;
+                isAttached = false;
+
+                int selectedJumpLocationIndex = Random.Range(0, surroundingAwareness.possibleJumpLocations.Count);
+
+                Vector2 direction = surroundingAwareness.possibleJumpLocations[selectedJumpLocationIndex] - transform.position;
+
+                rigidbody.velocity = direction.normalized * jumpSpeed;
+                rigidbody.isKinematic = false;
+
+                StartCoroutine(JumpLock());
+            }
+        }
+    }
+
+    private IEnumerator JumpLock()
+    {
+        yield return new WaitForSeconds(jumpLockTime);
+        isJumping = false;
     }
 
     private void ChooseAttachSurface()
     {
         if (surroundingAwareness.canAttachUp && !surroundingAwareness.canAttachLeft && !surroundingAwareness.canAttachRight && !surroundingAwareness.canAttachDown )
         {
-            attachedSurface = Surfaces.top;
+            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.top;
         }
         else if (!surroundingAwareness.canAttachUp && !surroundingAwareness.canAttachLeft && surroundingAwareness.canAttachRight && !surroundingAwareness.canAttachDown)
         {
-            attachedSurface = Surfaces.right;
+            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.right;
         }
         else if (!surroundingAwareness.canAttachUp && surroundingAwareness.canAttachLeft && !surroundingAwareness.canAttachRight && !surroundingAwareness.canAttachDown)
         {
-            attachedSurface = Surfaces.left;
+            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.left;
         }
         else if (!surroundingAwareness.canAttachUp && !surroundingAwareness.canAttachLeft && !surroundingAwareness.canAttachRight && surroundingAwareness.canAttachDown)
         {
-            attachedSurface = Surfaces.bottom;
+            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.bottom;
         }
         else
         {
@@ -107,24 +126,24 @@ public class LilithMovement : MonoBehaviour {
 
     private void HandleMultipleSurfaces()
     {
-        if (attachedSurface == Surfaces.left && surroundingAwareness.canAttachDown)
+        if (surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.left && surroundingAwareness.canAttachDown)
         {
-            attachedSurface = Surfaces.bottom;
+            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.bottom;
             HandleInnerCorner();
         }
-        if(attachedSurface == Surfaces.bottom && surroundingAwareness.canAttachRight)
+        if(surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.bottom && surroundingAwareness.canAttachRight)
         {
-            attachedSurface = Surfaces.right;
+            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.right;
             HandleInnerCorner();
         }
-        if(attachedSurface == Surfaces.right && surroundingAwareness.canAttachUp)
+        if(surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.right && surroundingAwareness.canAttachUp)
         {
-            attachedSurface = Surfaces.top;
+            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.top;
             HandleInnerCorner();
         }
-        if(attachedSurface == Surfaces.top && surroundingAwareness.canAttachLeft)
+        if(surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.top && surroundingAwareness.canAttachLeft)
         {
-            attachedSurface = Surfaces.left;
+            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.left;
             HandleInnerCorner();
         }
 
@@ -134,7 +153,7 @@ public class LilithMovement : MonoBehaviour {
 
     private void ReAdjustToSurface()
     {
-        Vector3 direction = -surfaceNormal;
+        Vector3 direction = -surroundingAwareness.surfaceNormal;
 
         RaycastHit2D result = Physics2D.Raycast(transform.position, direction, surroundingAwareness.bodySize * 2, surroundingAwareness.getWalkableLayerMask());
 
@@ -146,7 +165,7 @@ public class LilithMovement : MonoBehaviour {
 
     private void WalkForward()
     {
-        Vector2 walkDirection = Quaternion.Euler(0, 0, -90) * surfaceNormal;
+        Vector2 walkDirection = Quaternion.Euler(0, 0, -90) * surroundingAwareness.surfaceNormal;
 
         rigidbody.velocity = walkDirection * walkSpeed;
     }
