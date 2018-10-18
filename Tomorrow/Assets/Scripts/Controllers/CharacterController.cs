@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CharacterController : MonoBehaviour {
 
+    public static CharacterController instance;
+
     public float simulationSpeed;
 
     private Rigidbody2D characterRigidbody;
@@ -20,12 +22,16 @@ public class CharacterController : MonoBehaviour {
     private LayerMask floorLayerMask;
     [SerializeField]
     private LayerMask wallLayerMask;
+    [SerializeField]
+    private LayerMask lilithLayerMask;
+    [SerializeField]
+    private LayerMask playerLayerMask;
 
     [SerializeField]
     private Transform groundCheckTransform;
     [SerializeField]
     private float groundCheckRadius;
-    private bool isGrounded;
+    public bool isGrounded;
     [SerializeField]
     private Transform wallCheckTransform;
     [SerializeField]
@@ -104,10 +110,14 @@ public class CharacterController : MonoBehaviour {
     private float wallSlideDirectionLock;
 
     void Start () {
+        instance = this;
+
         characterRigidbody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         characterAudioManager = GetComponent<CharacterAudioManager>();
+
+        DisableLilithCollision();
 	}
 	
 	void Update ()
@@ -138,9 +148,17 @@ public class CharacterController : MonoBehaviour {
         ApplyMotion();
     }
 
+    private void DisableLilithCollision()
+    {
+        int lilithLayerValue = (int)Mathf.Log(lilithLayerMask.value, 2);
+        int playerLayerValue = (int)Mathf.Log(playerLayerMask.value, 2);
+        Physics2D.IgnoreLayerCollision(lilithLayerValue, playerLayerValue);
+    }
+
     private void ApplyMotion()
     {
-        currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * acceleration);
+        float accelerationFactor = isGrounded ? 1f : 1f;
+        currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * acceleration * accelerationFactor);
         Vector2 horizontal = currentVelocity * Vector2.right;
 
         if(isSlidingOnWall && wallSlideDirectionLockTimer < wallSlideDirectionLock) { horizontal = Vector2.zero; }
@@ -156,7 +174,8 @@ public class CharacterController : MonoBehaviour {
 
     private void HandleAdditionalVelocity()
     {
-        if (isGrounded) { additionalVelocity /= 2; }
+        if (isGrounded) { additionalVelocity /= 4; }
+        if (isSlidingOnWall) { additionalVelocity = Vector2.zero; }
 
         additionalVelocity = Vector2.Lerp(additionalVelocity, Vector2.zero, Time.deltaTime * 2);
     }
@@ -199,7 +218,7 @@ public class CharacterController : MonoBehaviour {
     {
         string clipName = animator.GetCurrentAnimatorClipInfo(0)[0].clip.name;
 
-        if (isGrounded && !clipName.Equals("Slide"))
+        if (isGrounded)
         {
             float absoluteSpeed = Mathf.Abs(currentVelocity);
 
@@ -239,7 +258,7 @@ public class CharacterController : MonoBehaviour {
 
     private bool ShouldPlaySlideAnimation()
     {
-        bool wantsStop = Mathf.Abs(targetVelocity) <= 0.2f && Mathf.Abs(currentVelocity) > walkingSpeed;
+        bool wantsStop = Mathf.Abs(targetVelocity) <= 0.2f && Mathf.Abs(currentVelocity) > (walkingSpeed + runningSpeed)*3/4;
 
         bool wantsWalk = playerWantsToWalk && Mathf.Abs(currentVelocity) > (walkingSpeed + runningSpeed)/2;
 
@@ -263,6 +282,7 @@ public class CharacterController : MonoBehaviour {
                 wallForce *= facingRight ? 1 : -1;
                 additionalVelocity += wallForce;
                 wallSlideLockTimer = wallSlideLock;
+                isSlidingOnWall = false;
                 animator.Play("Jump");
             }
 
@@ -322,17 +342,20 @@ public class CharacterController : MonoBehaviour {
     private void CheckWall()
     {
         isTouchingWall = Physics2D.OverlapCircle(wallCheckTransform.position, wallCheckRadius, wallLayerMask);
-
+        
         bool before = isSlidingOnWall;
-
+        
         isSlidingOnWall = isTouchingWall && !isGrounded && wallSlideLockTimer <= 0;
-
+        
         if(!before && isSlidingOnWall)
         {
             animator.Play("Wall Slide");
         }
 
-        extraJumps = maxExtraJumps;
+        if (isSlidingOnWall)
+        {
+            extraJumps = maxExtraJumps;
+        }
 
         animator.SetBool("Wall Slide", isSlidingOnWall);
     }
@@ -354,7 +377,7 @@ public class CharacterController : MonoBehaviour {
 
     private void PositionArms()
     {
-        if (!isSliding && !isSlidingOnWall && (shootingDirection.x < 0 && facingRight || shootingDirection.x >= 0 && !facingRight))
+        if (!isSlidingOnWall && (shootingDirection.x < 0 && facingRight || shootingDirection.x >= 0 && !facingRight))
         {
             FlipCharacter();
         }
@@ -378,7 +401,7 @@ public class CharacterController : MonoBehaviour {
         upperArm.transform.Rotate(Vector3.forward, upperArmAngle);
 
         Vector3 lowerDirection = shootingDirection;
-        lowerArm.transform.position = elbow.transform.position + lowerArm.transform.localScale.y * shootingDirection / 2f;
+        lowerArm.transform.position = elbow.transform.position + lowerArm.transform.localScale.y * lowerDirection / 2f;
         lowerArm.transform.rotation = Quaternion.identity;
         lowerArm.transform.Rotate(Vector3.forward, lowerArmAngle);
     }

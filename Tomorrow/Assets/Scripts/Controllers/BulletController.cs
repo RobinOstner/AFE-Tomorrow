@@ -54,7 +54,18 @@ public class BulletController : MonoBehaviour {
     
     void OnCollisionEnter2D(Collision2D col)
     {
-        Instantiate(particles, transform.position, Quaternion.identity);
+        string tag = col.collider.tag;
+
+        switch (tag)
+        {
+            case "Lilith":
+                LilithController lilithController = col.collider.GetComponent<LilithController>();
+                lilithController.Hit();
+                break;
+            default:
+                Instantiate(particles, transform.position, Quaternion.identity);
+                break;
+        }
 
         Destroy(gameObject);
     }
