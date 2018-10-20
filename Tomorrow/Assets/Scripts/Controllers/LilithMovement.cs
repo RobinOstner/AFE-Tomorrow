@@ -6,6 +6,8 @@ public class LilithMovement : MonoBehaviour {
 
     private LilithSurroundingAwareness surroundingAwareness;
 
+    private LilithAnimationController animationController;
+
     private new Rigidbody2D rigidbody;
 
     private Coroutine innerCornerCoroutine;
@@ -26,11 +28,14 @@ public class LilithMovement : MonoBehaviour {
     
 	void Start () {
         surroundingAwareness = GetComponent<LilithSurroundingAwareness>();
+        animationController = GetComponentInChildren<LilithAnimationController>();
         rigidbody = GetComponent<Rigidbody2D>();
         rigidbody.useFullKinematicContacts = true;
     }
 	
-	void Update () {
+	void Update ()
+    {
+
         if (!isJumping)
         {
             HandleAttaching();
@@ -38,6 +43,7 @@ public class LilithMovement : MonoBehaviour {
 
         if (!isWalkingAroundCorner)
         {
+
             if (isAttached)
             {
                 HandleJumping();
@@ -57,6 +63,15 @@ public class LilithMovement : MonoBehaviour {
 
     private void HandleAttaching()
     {
+        if(innerCornerCoroutine != null || outerCornerCoroutine != null)
+        {
+            rigidbody.velocity = Vector2.zero;
+            rigidbody.isKinematic = true;
+            isAttached = true;
+            Debug.Log("Coroutine Running!");
+            return;
+        }
+
         if (!isDead && surroundingAwareness.canAttach)
         {
             rigidbody.velocity = Vector3.zero;
@@ -71,6 +86,8 @@ public class LilithMovement : MonoBehaviour {
             isAttached = false;
             surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.none;
         }
+
+        animationController.AdjustRotation();
     }
 
     private void HandleJumping()
@@ -86,12 +103,30 @@ public class LilithMovement : MonoBehaviour {
 
                 Vector2 direction = surroundingAwareness.possibleJumpLocations[selectedJumpLocationIndex] - transform.position;
 
-                rigidbody.velocity = direction.normalized * jumpSpeed;
-                rigidbody.isKinematic = false;
-
-                StartCoroutine(JumpLock());
+                if (isDiagonal(direction)) { animationController.PlayDiagonalJump(direction); }
+                else { animationController.PlayVerticalJump(direction); }
             }
         }
+    }
+
+    public void Jump(Vector3 direction)
+    {
+        rigidbody.velocity = direction.normalized * jumpSpeed;
+        rigidbody.isKinematic = false;
+
+        StartCoroutine(JumpLock());
+    }
+
+    private bool isDiagonal(Vector3 jumpDirection)
+    {
+        jumpDirection = jumpDirection.normalized;
+
+        if(jumpDirection == Vector3.up) { return false; }
+        if(jumpDirection == Vector3.left) { return false; }
+        if(jumpDirection == Vector3.right) { return false; }
+        if(jumpDirection == Vector3.down) { return false; }
+
+        return true;
     }
 
     private IEnumerator JumpLock()
@@ -128,23 +163,19 @@ public class LilithMovement : MonoBehaviour {
     {
         if (surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.left && surroundingAwareness.canAttachDown)
         {
-            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.bottom;
-            HandleInnerCorner();
+            HandleInnerCorner(LilithSurroundingAwareness.Surfaces.bottom);
         }
         if(surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.bottom && surroundingAwareness.canAttachRight)
         {
-            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.right;
-            HandleInnerCorner();
+            HandleInnerCorner(LilithSurroundingAwareness.Surfaces.right);
         }
         if(surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.right && surroundingAwareness.canAttachUp)
         {
-            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.top;
-            HandleInnerCorner();
+            HandleInnerCorner(LilithSurroundingAwareness.Surfaces.top);
         }
         if(surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.top && surroundingAwareness.canAttachLeft)
         {
-            surroundingAwareness.attachedSurface = LilithSurroundingAwareness.Surfaces.left;
-            HandleInnerCorner();
+            HandleInnerCorner(LilithSurroundingAwareness.Surfaces.left);
         }
 
         ReAdjustToSurface();
@@ -182,19 +213,46 @@ public class LilithMovement : MonoBehaviour {
     {
         isWalkingAroundCorner = true;
 
-        yield return new WaitForSeconds(1);
+        LilithSurroundingAwareness.Surfaces nextSurface = CalculateNextSurfaceOuterCorner();
 
         Vector3 difference = surroundingAwareness.possibleCorners[0] - transform.position;
-        transform.position += difference * 2;
+
+        animationController.PlayOuterCornerAnimation(nextSurface, difference);
+
+        yield return new WaitUntil(() => animationController.outerCornerAnimationFinished);
+
+        Debug.Log("Outer Corner Finished!");
+
+        animationController.outerCornerAnimationFinished = false;
+
+        yield return null;
 
         isWalkingAroundCorner = false;
         outerCornerCoroutine = null;
     }
 
-    private void HandleInnerCorner()
+    private LilithSurroundingAwareness.Surfaces CalculateNextSurfaceOuterCorner()
+    {
+        switch (surroundingAwareness.attachedSurface)
+        {
+            case LilithSurroundingAwareness.Surfaces.bottom:
+                return LilithSurroundingAwareness.Surfaces.left;
+            case LilithSurroundingAwareness.Surfaces.left:
+                return LilithSurroundingAwareness.Surfaces.top;
+            case LilithSurroundingAwareness.Surfaces.top:
+                return LilithSurroundingAwareness.Surfaces.right;
+            case LilithSurroundingAwareness.Surfaces.right:
+                return LilithSurroundingAwareness.Surfaces.bottom;
+            default:
+                return LilithSurroundingAwareness.Surfaces.none;
+        }
+    }
+
+    private void HandleInnerCorner(LilithSurroundingAwareness.Surfaces nextSurface)
     {
         if(innerCornerCoroutine == null)
         {
+            animationController.PlayInnerCornerAnimation(nextSurface);
             innerCornerCoroutine = StartCoroutine(InnerCornerCoroutine());
         }
     }
@@ -202,7 +260,13 @@ public class LilithMovement : MonoBehaviour {
     private IEnumerator InnerCornerCoroutine()
     {
         isWalkingAroundCorner = true;
-        yield return new WaitForSeconds(1);
+
+        yield return new WaitUntil(() => animationController.innerCornerAnimationFinished);
+
+        Debug.Log("Inner Corner Finished!");
+
+        animationController.innerCornerAnimationFinished = false;
+
         isWalkingAroundCorner = false;
         innerCornerCoroutine = null;
     }

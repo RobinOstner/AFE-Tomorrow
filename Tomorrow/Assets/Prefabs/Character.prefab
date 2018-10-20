@@ -236,7 +236,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1892110360038568}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.69, y: 0.16, z: 0}
+  m_LocalPosition: {x: 0.69, y: 2, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4364998386426606}
@@ -550,6 +550,7 @@ MonoBehaviour:
     m_Bits: 4096
   groundCheckTransform: {fileID: 4659746359625962}
   groundCheckRadius: 0.1
+  isGrounded: 0
   wallCheckTransform: {fileID: 4338632137012732}
   wallCheckRadius: 0.1
   walkingSpeed: 2
@@ -558,7 +559,7 @@ MonoBehaviour:
   wallSlideAcceleration: 3
   acceleration: 4
   jumpForce: 15
-  wallJumpForce: 10
+  wallJumpForce: 15
   maxExtraJumps: 1
   shoulder: {fileID: 1455970660908224}
   elbow: {fileID: 1065993948570906}

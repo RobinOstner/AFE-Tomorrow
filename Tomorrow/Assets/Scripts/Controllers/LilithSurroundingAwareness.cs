@@ -164,10 +164,10 @@ public class LilithSurroundingAwareness : MonoBehaviour {
             if (canJumpRight && !isWalkingDirection(rightJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)rightJumpRay.direction * rightJumpRay.distance); }
             if (canJumpUp && !isWalkingDirection(upJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)upJumpRay.direction * upJumpRay.distance); }
             if (canJumpDown && !isWalkingDirection(downJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)downJumpRay.direction * downJumpRay.distance); }
-            if (canJumpUpLeft && !isWalkingDirection(upLeftJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)upLeftJumpRay.direction * upLeftJumpRay.distance); }
-            if (canJumpUpRight && !isWalkingDirection(upRightJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)upRightJumpRay.direction * upRightJumpRay.distance); }
-            if (canJumpDownLeft && !isWalkingDirection(downLeftJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)downLeftJumpRay.direction * downLeftJumpRay.distance); }
-            if (canJumpDownRight && !isWalkingDirection(downRightJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)downRightJumpRay.direction * downRightJumpRay.distance); }
+            if (canJumpUpLeft && !isWalkingDirection(upLeftJumpRay.direction) && isForwardDirection(upLeftJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)upLeftJumpRay.direction * upLeftJumpRay.distance); }
+            if (canJumpUpRight && !isWalkingDirection(upRightJumpRay.direction) && isForwardDirection(upRightJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)upRightJumpRay.direction * upRightJumpRay.distance); }
+            if (canJumpDownLeft && !isWalkingDirection(downLeftJumpRay.direction) && isForwardDirection(downLeftJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)downLeftJumpRay.direction * downLeftJumpRay.distance); }
+            if (canJumpDownRight && !isWalkingDirection(downRightJumpRay.direction) && isForwardDirection(downRightJumpRay.direction)) { jumpLocations.Add(transform.position + (Vector3)downRightJumpRay.direction * downRightJumpRay.distance); }
 
             return jumpLocations;
         }
@@ -301,6 +301,16 @@ public class LilithSurroundingAwareness : MonoBehaviour {
     private bool isWalkingDirection(Vector3 jumpDirection)
     {
         return (jumpDirection == Quaternion.Euler(0, 0, 90) * surfaceNormal || jumpDirection == Quaternion.Euler(0, 0, -90) * surfaceNormal);
+    }
+
+    private bool isForwardDirection(Vector3 jumpDirection)
+    {
+        if(surfaceNormal == Vector3.left && jumpDirection.y > 0) { return true; }
+        if(surfaceNormal == Vector3.right && jumpDirection.y < 0) { return true; }
+        if(surfaceNormal == Vector3.up && jumpDirection.x > 0) { return true; }
+        if(surfaceNormal == Vector3.down && jumpDirection.x < 0) { return true; }
+
+        return false;
     }
 
     private void InitializeCorners()
