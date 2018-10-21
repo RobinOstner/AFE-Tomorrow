@@ -27,7 +27,7 @@ public class LilithAnimationController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
+        HandleFlying();
 	}
 
     public void AdjustRotation()
@@ -97,14 +97,30 @@ public class LilithAnimationController : MonoBehaviour {
     }
 
     public void OuterCornerAnimationFinished()
-    {
-        Debug.Log("Trigger Outer Corner Finished!");
-
+    { 
         transform.parent.position += outerCornerDifference * 2;
 
         outerCornerAnimationFinished = true;
         surroundingAwareness.attachedSurface = nextSurface;
 
         AdjustRotation();
+    }
+
+    public void HandleFlying()
+    {
+        animator.SetFloat("Horizontal", movement.currentDirection.x);
+        animator.SetFloat("Vertical", movement.currentDirection.y);
+
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Flying"))
+        {
+            if (movement.isAttached && !animator.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+            {
+                animator.Play("Walking");
+            }
+            else
+            {
+                transform.rotation = Quaternion.identity;
+            }
+        }
     }
 }

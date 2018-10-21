@@ -25,6 +25,16 @@ public class LilithMovement : MonoBehaviour {
     public float walkSpeed;
 
     public float jumpSpeed;
+
+    private Vector3 oldPosition;
+
+    public Vector2 currentDirection
+    {
+        get
+        {
+            return transform.position - oldPosition;
+        }
+    }
     
 	void Start () {
         surroundingAwareness = GetComponent<LilithSurroundingAwareness>();
@@ -32,26 +42,21 @@ public class LilithMovement : MonoBehaviour {
         rigidbody = GetComponent<Rigidbody2D>();
         rigidbody.useFullKinematicContacts = true;
     }
-	
-	void Update ()
-    {
 
+    void Update()
+    {
         if (!isJumping)
         {
             HandleAttaching();
         }
 
-        if (!isWalkingAroundCorner)
+        if (isAttached && !isWalkingAroundCorner)
         {
+            HandleJumping();
 
-            if (isAttached)
+            if (!isJumping)
             {
-                HandleJumping();
-
-                if (!isJumping)
-                {
-                    WalkForward();
-                }
+                WalkForward();
             }
 
             if (!isJumping && surroundingAwareness.possibleCorners.Count > 0)
@@ -59,7 +64,14 @@ public class LilithMovement : MonoBehaviour {
                 HandleOuterCorner();
             }
         }
-	}
+
+        UpdateOldValues();
+    }
+
+    private void UpdateOldValues()
+    {
+        oldPosition = transform.position;
+    }
 
     private void HandleAttaching()
     {
@@ -68,7 +80,6 @@ public class LilithMovement : MonoBehaviour {
             rigidbody.velocity = Vector2.zero;
             rigidbody.isKinematic = true;
             isAttached = true;
-            Debug.Log("Coroutine Running!");
             return;
         }
 
@@ -97,21 +108,23 @@ public class LilithMovement : MonoBehaviour {
             if(Random.Range(0f, 100f) <= jumpProbability)
             {
                 isJumping = true;
-                isAttached = false;
+                isAttached = true;
 
                 int selectedJumpLocationIndex = Random.Range(0, surroundingAwareness.possibleJumpLocations.Count);
 
                 Vector2 direction = surroundingAwareness.possibleJumpLocations[selectedJumpLocationIndex] - transform.position;
 
                 if (isDiagonal(direction)) { animationController.PlayDiagonalJump(direction); }
-                else { animationController.PlayVerticalJump(direction); }
+                else {
+                    animationController.PlayVerticalJump(direction);
+                }
             }
         }
     }
 
     public void Jump(Vector3 direction)
     {
-        rigidbody.velocity = direction.normalized * jumpSpeed;
+        rigidbody.velocity = (direction + Vector3.up * direction.magnitude/2) * jumpSpeed;
         rigidbody.isKinematic = false;
 
         StartCoroutine(JumpLock());
