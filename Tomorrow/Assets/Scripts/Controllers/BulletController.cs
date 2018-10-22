@@ -59,8 +59,6 @@ public class BulletController : MonoBehaviour {
         switch (tag)
         {
             case "Lilith":
-                LilithController lilithController = col.collider.GetComponent<LilithController>();
-                lilithController.Hit();
                 break;
             default:
                 Instantiate(particles, transform.position, Quaternion.identity);

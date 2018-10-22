@@ -226,9 +226,13 @@ public class LilithMovement : MonoBehaviour {
     {
         isWalkingAroundCorner = true;
 
+        Vector3 cornerPosition = surroundingAwareness.possibleCorners[0];
+
+        AdjustToOuterCornerPosition();
+
         LilithSurroundingAwareness.Surfaces nextSurface = CalculateNextSurfaceOuterCorner();
 
-        Vector3 difference = surroundingAwareness.possibleCorners[0] - transform.position;
+        Vector3 difference = cornerPosition - transform.position;
 
         animationController.PlayOuterCornerAnimation(nextSurface, difference);
 
@@ -242,6 +246,11 @@ public class LilithMovement : MonoBehaviour {
 
         isWalkingAroundCorner = false;
         outerCornerCoroutine = null;
+    }
+
+    private void AdjustToOuterCornerPosition()
+    {
+        transform.position -= surroundingAwareness.distanceToCorner.normalized - surroundingAwareness.distanceToCorner;
     }
 
     private LilithSurroundingAwareness.Surfaces CalculateNextSurfaceOuterCorner()

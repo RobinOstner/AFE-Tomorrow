@@ -21,6 +21,8 @@ public class LilithSurroundingAwareness : MonoBehaviour {
     public Vector3 bottomLeftCorner;
     public Vector3 bottomRightCorner;
 
+    public Vector3 distanceToCorner;
+
     [SerializeField]
     private float attachableDistance;
 
@@ -372,7 +374,9 @@ public class LilithSurroundingAwareness : MonoBehaviour {
 
                 if (result.collider != null)
                 {
-                    return checkPosition + checkDirection * result.distance + surroundingCheckRay.direction * -0.01f;
+                    Vector2 cornerPosition = checkPosition + checkDirection * result.distance + surroundingCheckRay.direction * -0.01f;
+                    CalculateCornerDistance(surroundingCheckRay, cornerPosition);
+                    return cornerPosition;
                 }
             }
         }
@@ -436,6 +440,12 @@ public class LilithSurroundingAwareness : MonoBehaviour {
         {
             return Quaternion.Euler(0, 0, 90) * surroundingCheckRay.direction;
         }
+    }
+
+    private void CalculateCornerDistance(SurroundingCheckRay surroundingCheckRay, Vector2 cornerPosition)
+    {
+        Vector3 contactPoint = transform.position + (Vector3)surroundingCheckRay.direction * bodySize + (Vector3)surroundingCheckRay.direction * surroundingCheckRay.distance;
+        distanceToCorner =  cornerPosition - (Vector2)contactPoint;
     }
 
     public LayerMask getWalkableLayerMask() { return walkableLayerMask; }
