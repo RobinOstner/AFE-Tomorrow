@@ -352,13 +352,13 @@ public class LilithSurroundingAwareness : MonoBehaviour {
     private void CheckCorners()
     {
         leftBottomCorner = CheckCorner(canAttachLeft, true, leftCheckRay);
-        leftTopCorner = CheckCorner(canAttachLeft, false, leftCheckRay);
+        //leftTopCorner = CheckCorner(canAttachLeft, false, leftCheckRay);
         rightTopCorner = CheckCorner(canAttachRight, true, rightCheckRay);
-        rightBottomCorner = CheckCorner(canAttachRight, false, rightCheckRay);
+        //rightBottomCorner = CheckCorner(canAttachRight, false, rightCheckRay);
         topLeftCorner = CheckCorner(canAttachUp, true, upCheckRay);
-        topRightCorner = CheckCorner(canAttachUp, false, upCheckRay);
+        //topRightCorner = CheckCorner(canAttachUp, false, upCheckRay);
         bottomRightCorner = CheckCorner(canAttachDown, true, downCheckRay);
-        bottomLeftCorner = CheckCorner(canAttachDown, false, downCheckRay);
+        //bottomLeftCorner = CheckCorner(canAttachDown, false, downCheckRay);
     }
 
     private Vector3 CheckCorner(bool canAttach, bool option, SurroundingCheckRay surroundingCheckRay)

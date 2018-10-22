@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class LilithMovement : MonoBehaviour {
 
@@ -103,7 +104,7 @@ public class LilithMovement : MonoBehaviour {
 
     private void HandleJumping()
     {
-        if(surroundingAwareness.possibleJumpLocations.Count > 0)
+        if(surroundingAwareness.possibleJumpLocations.Count > 0 && !isJumping)
         {
             if(Random.Range(0f, 100f) <= jumpProbability)
             {
@@ -124,7 +125,7 @@ public class LilithMovement : MonoBehaviour {
 
     public void Jump(Vector3 direction)
     {
-        rigidbody.velocity = (direction + Vector3.up * direction.magnitude/2) * jumpSpeed;
+        rigidbody.velocity = (direction + Vector3.up * direction.magnitude/1.8f) * jumpSpeed;
         rigidbody.isKinematic = false;
 
         StartCoroutine(JumpLock());
@@ -225,6 +226,7 @@ public class LilithMovement : MonoBehaviour {
     private IEnumerator OuterCornerCoroutine()
     {
         isWalkingAroundCorner = true;
+        rigidbody.velocity = Vector2.zero;
 
         Vector3 cornerPosition = surroundingAwareness.possibleCorners[0];
 
@@ -238,8 +240,6 @@ public class LilithMovement : MonoBehaviour {
 
         yield return new WaitUntil(() => animationController.outerCornerAnimationFinished);
 
-        Debug.Log("Outer Corner Finished!");
-
         animationController.outerCornerAnimationFinished = false;
 
         yield return null;
@@ -250,7 +250,8 @@ public class LilithMovement : MonoBehaviour {
 
     private void AdjustToOuterCornerPosition()
     {
-        transform.position -= surroundingAwareness.distanceToCorner.normalized - surroundingAwareness.distanceToCorner;
+        Vector3 adjustment = surroundingAwareness.distanceToCorner.normalized - surroundingAwareness.distanceToCorner;
+        transform.position -= adjustment;
     }
 
     private LilithSurroundingAwareness.Surfaces CalculateNextSurfaceOuterCorner()

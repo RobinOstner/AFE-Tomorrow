@@ -117,10 +117,11 @@ public class LilithAnimationController : MonoBehaviour {
             {
                 animator.Play("Walking");
             }
-            else
-            {
-                transform.rotation = Quaternion.identity;
-            }
         }
+    }
+
+    public void TriggerFlying()
+    {
+        transform.rotation = Quaternion.identity;
     }
 }
