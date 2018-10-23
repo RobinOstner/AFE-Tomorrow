@@ -51,6 +51,22 @@ public class LilithAnimationController : MonoBehaviour {
         }
     }
 
+    public void PlayIdle()
+    {
+        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+        {
+            animator.Play("Idle");
+        }
+    }
+
+    public void PlayWalk()
+    {
+        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Walking"))
+        {
+            animator.Play("Walking");
+        }
+    }
+
     public void PlayVerticalJump(Vector3 direction)
     {
         jumpDirection = direction;

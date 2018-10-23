@@ -19,10 +19,13 @@ public class LilithMovement : MonoBehaviour {
     public bool isWalkingAroundCorner;
     public bool isAttached;
     public bool isJumping;
+    public bool isIdling;
 
     public float jumpLockTime;
 
     public float jumpProbability;
+    public float idleProbability;
+    public float directionChangeProbability;
 
     public float walkSpeed;
 
@@ -49,8 +52,6 @@ public class LilithMovement : MonoBehaviour {
 
     void Update()
     {
-        HandleFlip();
-
         if (!isJumping)
         {
             HandleAttaching();
@@ -58,16 +59,26 @@ public class LilithMovement : MonoBehaviour {
         
         if (isAttached && !isWalkingAroundCorner)
         {
-            HandleJumping();
+            HandleIdling();
 
-            if (!isJumping)
+            if (!isIdling)
             {
-                WalkForward();
+                HandleJumping();
+
+                if (!isJumping)
+                {
+                    WalkForward();
+                }
+
+                if (!isJumping && surroundingAwareness.possibleCorners.Count > 0)
+                {
+                    HandleOuterCorner();
+                }
             }
-
-            if (!isJumping && surroundingAwareness.possibleCorners.Count > 0)
+            else
             {
-                HandleOuterCorner();
+                animationController.PlayIdle();
+                HandleFlip();
             }
         }
 
@@ -81,7 +92,20 @@ public class LilithMovement : MonoBehaviour {
 
     private void HandleFlip()
     {
+        if (Random.Range(0f, 100f) < directionChangeProbability)
+        {
+            oppositeDirection = !oppositeDirection;
+        }
+
         transform.localScale = oppositeDirection ? new Vector3(-1, 1, 1) : new Vector3(1, 1, 1);
+    }
+
+    private void HandleIdling()
+    {
+        if(Random.Range(0f, 100f) < idleProbability)
+        {
+            isIdling = !isIdling;
+        }
     }
 
     private void HandleAttaching()
@@ -235,6 +259,8 @@ public class LilithMovement : MonoBehaviour {
 
     private void WalkForward()
     {
+        animationController.PlayWalk();
+
         float angle = oppositeDirection ? 90 : -90;
 
         Vector2 walkDirection = Quaternion.Euler(0, 0, angle) * surroundingAwareness.surfaceNormal;
