@@ -108,7 +108,8 @@ public class LilithAnimationController : MonoBehaviour {
 
     public void HandleFlying()
     {
-        animator.SetFloat("Horizontal", movement.currentDirection.x);
+        float flip = movement.oppositeDirection ? -1 : 1;
+        animator.SetFloat("Horizontal", movement.currentDirection.x * flip);
         animator.SetFloat("Vertical", movement.currentDirection.y);
 
         if (animator.GetCurrentAnimatorStateInfo(0).IsName("Flying"))

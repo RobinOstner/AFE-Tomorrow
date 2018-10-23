@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(LilithMovement))]
 public class LilithSurroundingAwareness : MonoBehaviour {
 
     [SerializeField]
     private LayerMask walkableLayerMask;
+
+    private LilithMovement movement;
 
     public SurroundingCheckRay rightCheckRay;
     public SurroundingCheckRay leftCheckRay;
@@ -199,6 +202,8 @@ public class LilithSurroundingAwareness : MonoBehaviour {
     public float bodySize;
     
 	void Start () {
+        movement = GetComponent<LilithMovement>();
+
         InitializeCorners();
         SetupSurroundingCheckRays();
         SetupJumpCheckRays();
@@ -307,11 +312,20 @@ public class LilithSurroundingAwareness : MonoBehaviour {
 
     private bool isForwardDirection(Vector3 jumpDirection)
     {
-        if(surfaceNormal == Vector3.left && jumpDirection.y > 0) { return true; }
-        if(surfaceNormal == Vector3.right && jumpDirection.y < 0) { return true; }
-        if(surfaceNormal == Vector3.up && jumpDirection.x > 0) { return true; }
-        if(surfaceNormal == Vector3.down && jumpDirection.x < 0) { return true; }
-
+        if (!movement.oppositeDirection)
+        {
+            if (surfaceNormal == Vector3.left && jumpDirection.y > 0) { return true; }
+            if (surfaceNormal == Vector3.right && jumpDirection.y < 0) { return true; }
+            if (surfaceNormal == Vector3.up && jumpDirection.x > 0) { return true; }
+            if (surfaceNormal == Vector3.down && jumpDirection.x < 0) { return true; }
+        }
+        else
+        {
+            if (surfaceNormal == Vector3.left && jumpDirection.y < 0) { return true; }
+            if (surfaceNormal == Vector3.right && jumpDirection.y > 0) { return true; }
+            if (surfaceNormal == Vector3.up && jumpDirection.x < 0) { return true; }
+            if (surfaceNormal == Vector3.down && jumpDirection.x > 0) { return true; }
+        }
         return false;
     }
 
@@ -351,14 +365,20 @@ public class LilithSurroundingAwareness : MonoBehaviour {
 
     private void CheckCorners()
     {
-        leftBottomCorner = CheckCorner(canAttachLeft, true, leftCheckRay);
-        //leftTopCorner = CheckCorner(canAttachLeft, false, leftCheckRay);
-        rightTopCorner = CheckCorner(canAttachRight, true, rightCheckRay);
-        //rightBottomCorner = CheckCorner(canAttachRight, false, rightCheckRay);
-        topLeftCorner = CheckCorner(canAttachUp, true, upCheckRay);
-        //topRightCorner = CheckCorner(canAttachUp, false, upCheckRay);
-        bottomRightCorner = CheckCorner(canAttachDown, true, downCheckRay);
-        //bottomLeftCorner = CheckCorner(canAttachDown, false, downCheckRay);
+        if (!movement.oppositeDirection)
+        {
+            leftBottomCorner = CheckCorner(canAttachLeft, true, leftCheckRay);
+            rightTopCorner = CheckCorner(canAttachRight, true, rightCheckRay);
+            topLeftCorner = CheckCorner(canAttachUp, true, upCheckRay);
+            bottomRightCorner = CheckCorner(canAttachDown, true, downCheckRay);
+        }
+        else
+        {
+            leftTopCorner = CheckCorner(canAttachLeft, false, leftCheckRay);
+            rightBottomCorner = CheckCorner(canAttachRight, false, rightCheckRay);
+            topRightCorner = CheckCorner(canAttachUp, false, upCheckRay);
+            bottomLeftCorner = CheckCorner(canAttachDown, false, downCheckRay);
+        }
     }
 
     private Vector3 CheckCorner(bool canAttach, bool option, SurroundingCheckRay surroundingCheckRay)

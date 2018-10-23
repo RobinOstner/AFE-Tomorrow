@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+[RequireComponent(typeof(LilithSurroundingAwareness))]
 public class LilithMovement : MonoBehaviour {
 
     private LilithSurroundingAwareness surroundingAwareness;
@@ -25,6 +26,8 @@ public class LilithMovement : MonoBehaviour {
 
     public float walkSpeed;
 
+    public bool oppositeDirection;
+
     public float jumpSpeed;
 
     private Vector3 oldPosition;
@@ -46,11 +49,13 @@ public class LilithMovement : MonoBehaviour {
 
     void Update()
     {
+        HandleFlip();
+
         if (!isJumping)
         {
             HandleAttaching();
         }
-
+        
         if (isAttached && !isWalkingAroundCorner)
         {
             HandleJumping();
@@ -72,6 +77,11 @@ public class LilithMovement : MonoBehaviour {
     private void UpdateOldValues()
     {
         oldPosition = transform.position;
+    }
+
+    private void HandleFlip()
+    {
+        transform.localScale = oppositeDirection ? new Vector3(-1, 1, 1) : new Vector3(1, 1, 1);
     }
 
     private void HandleAttaching()
@@ -175,25 +185,40 @@ public class LilithMovement : MonoBehaviour {
 
     private void HandleMultipleSurfaces()
     {
-        if (surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.left && surroundingAwareness.canAttachDown)
+        if (!oppositeDirection && surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.left && surroundingAwareness.canAttachDown)
         {
             HandleInnerCorner(LilithSurroundingAwareness.Surfaces.bottom);
         }
-        if(surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.bottom && surroundingAwareness.canAttachRight)
+        if(!oppositeDirection && surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.bottom && surroundingAwareness.canAttachRight)
         {
             HandleInnerCorner(LilithSurroundingAwareness.Surfaces.right);
         }
-        if(surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.right && surroundingAwareness.canAttachUp)
+        if(!oppositeDirection && surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.right && surroundingAwareness.canAttachUp)
         {
             HandleInnerCorner(LilithSurroundingAwareness.Surfaces.top);
         }
-        if(surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.top && surroundingAwareness.canAttachLeft)
+        if(!oppositeDirection && surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.top && surroundingAwareness.canAttachLeft)
         {
             HandleInnerCorner(LilithSurroundingAwareness.Surfaces.left);
         }
+        if (oppositeDirection && surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.left && surroundingAwareness.canAttachUp)
+        {
+            HandleInnerCorner(LilithSurroundingAwareness.Surfaces.top);
+        }
+        if (oppositeDirection && surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.bottom && surroundingAwareness.canAttachLeft)
+        {
+            HandleInnerCorner(LilithSurroundingAwareness.Surfaces.left);
+        }
+        if (oppositeDirection && surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.right && surroundingAwareness.canAttachDown)
+        {
+            HandleInnerCorner(LilithSurroundingAwareness.Surfaces.bottom);
+        }
+        if (oppositeDirection && surroundingAwareness.attachedSurface == LilithSurroundingAwareness.Surfaces.top && surroundingAwareness.canAttachRight)
+        {
+            HandleInnerCorner(LilithSurroundingAwareness.Surfaces.right);
+        }
 
         ReAdjustToSurface();
-
     }
 
     private void ReAdjustToSurface()
@@ -210,7 +235,9 @@ public class LilithMovement : MonoBehaviour {
 
     private void WalkForward()
     {
-        Vector2 walkDirection = Quaternion.Euler(0, 0, -90) * surroundingAwareness.surfaceNormal;
+        float angle = oppositeDirection ? 90 : -90;
+
+        Vector2 walkDirection = Quaternion.Euler(0, 0, angle) * surroundingAwareness.surfaceNormal;
 
         rigidbody.velocity = walkDirection * walkSpeed;
     }
@@ -256,18 +283,37 @@ public class LilithMovement : MonoBehaviour {
 
     private LilithSurroundingAwareness.Surfaces CalculateNextSurfaceOuterCorner()
     {
-        switch (surroundingAwareness.attachedSurface)
+        if (!oppositeDirection)
         {
-            case LilithSurroundingAwareness.Surfaces.bottom:
-                return LilithSurroundingAwareness.Surfaces.left;
-            case LilithSurroundingAwareness.Surfaces.left:
-                return LilithSurroundingAwareness.Surfaces.top;
-            case LilithSurroundingAwareness.Surfaces.top:
-                return LilithSurroundingAwareness.Surfaces.right;
-            case LilithSurroundingAwareness.Surfaces.right:
-                return LilithSurroundingAwareness.Surfaces.bottom;
-            default:
-                return LilithSurroundingAwareness.Surfaces.none;
+            switch (surroundingAwareness.attachedSurface)
+            {
+                case LilithSurroundingAwareness.Surfaces.bottom:
+                    return LilithSurroundingAwareness.Surfaces.left;
+                case LilithSurroundingAwareness.Surfaces.left:
+                    return LilithSurroundingAwareness.Surfaces.top;
+                case LilithSurroundingAwareness.Surfaces.top:
+                    return LilithSurroundingAwareness.Surfaces.right;
+                case LilithSurroundingAwareness.Surfaces.right:
+                    return LilithSurroundingAwareness.Surfaces.bottom;
+                default:
+                    return LilithSurroundingAwareness.Surfaces.none;
+            }
+        }
+        else
+        {
+            switch (surroundingAwareness.attachedSurface)
+            {
+                case LilithSurroundingAwareness.Surfaces.bottom:
+                    return LilithSurroundingAwareness.Surfaces.right;
+                case LilithSurroundingAwareness.Surfaces.left:
+                    return LilithSurroundingAwareness.Surfaces.bottom;
+                case LilithSurroundingAwareness.Surfaces.top:
+                    return LilithSurroundingAwareness.Surfaces.left;
+                case LilithSurroundingAwareness.Surfaces.right:
+                    return LilithSurroundingAwareness.Surfaces.top;
+                default:
+                    return LilithSurroundingAwareness.Surfaces.none;
+            }
         }
     }
 
