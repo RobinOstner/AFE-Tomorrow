@@ -23,6 +23,7 @@ public class Turret : MonoBehaviour {
     public float overshootAngle;
 
     private Vector2 targetDirection;
+    private float targetDistance;
 
     private Vector2 shootingDirection;
 
@@ -30,6 +31,8 @@ public class Turret : MonoBehaviour {
 
     private float currentAngle = 270;
     private float angle;
+
+    public float maxDistance;
 
     public float rotationSpeed;
     public float shootingRotationSpeed;
@@ -54,9 +57,10 @@ public class Turret : MonoBehaviour {
 	void Update () {
         HandleEngaging();
 
+        CalculateShootingDirection();
+
         if (engaged && weaponObject.activeSelf)
         {
-            CalculateShootingDirection();
 
             if (isCooledDown)
             {
@@ -79,9 +83,11 @@ public class Turret : MonoBehaviour {
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.red;
+        Gizmos.color = engaged ? Color.green : Color.red;
 
-        Gizmos.DrawRay(weaponPivot.position, targetDirection*20);
+        Gizmos.DrawRay(weaponPivot.position, targetDirection*targetDistance);
+        
+        Gizmos.DrawWireSphere(weaponPivot.position, maxDistance);
     }
 
     private void HandleCoolDownTimer()
@@ -114,6 +120,8 @@ public class Turret : MonoBehaviour {
 
     private void HandleEngaging()
     {
+        engaged = targetDistance < maxDistance && angle >= 90 - overshootAngle && angle <= 270 + overshootAngle;
+
         if (!engaged && currentAngle <= 269)
         {
             if (Mathf.Abs(270 - currentAngle) > 10)
@@ -153,13 +161,16 @@ public class Turret : MonoBehaviour {
 
     private void CalculateShootingDirection()
     {
-        targetDirection = (target.position - weaponPivot.position).normalized;
+        Vector3 direction = target.position - weaponPivot.position;
+        targetDistance = direction.magnitude;
+        targetDirection = direction.normalized;
+
+        axis = transform.rotation * Vector3.down;
+        angle = Vector3.Angle(targetDirection, axis);
     }
 
     private void AimAtTarget(float rotationSpeed)
     {
-        axis = transform.rotation * Vector3.down;
-        angle = Vector3.Angle(targetDirection, axis);
 
         if(LeftRightTest.CheckLeftRight(axis, Vector3.forward, target.position - weaponPivot.position) < 0)
         {
