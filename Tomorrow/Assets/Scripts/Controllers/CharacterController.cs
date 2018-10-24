@@ -251,6 +251,7 @@ public class CharacterController : MonoBehaviour {
         if(ShouldPlaySlideAnimation())
         {
             isSliding = true;
+            characterAudioManager.PlaySlidingSound();
             animator.Play("Slide", 0);
             animator.speed = 1;
         }
@@ -262,7 +263,7 @@ public class CharacterController : MonoBehaviour {
 
         bool wantsWalk = playerWantsToWalk && Mathf.Abs(currentVelocity) > (walkingSpeed + runningSpeed)/2;
 
-        return isGrounded && (wantsStop || wantsWalk);
+        return !isSliding && isGrounded && (wantsStop || wantsWalk);
     }
 
     private void HandleJumps()
