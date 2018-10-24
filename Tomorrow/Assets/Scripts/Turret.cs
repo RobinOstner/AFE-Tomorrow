@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(TurretAudioManager))]
 public class Turret : MonoBehaviour {
 
     private Animator animator;
+
+    private TurretAudioManager audioManager;
 
     public Transform target;
     public Transform weaponPivot;
@@ -45,6 +48,7 @@ public class Turret : MonoBehaviour {
     
 	void Start () {
         animator = GetComponent<Animator>();
+        audioManager = GetComponent<TurretAudioManager>();
 	}
 	
 	void Update () {
@@ -103,6 +107,8 @@ public class Turret : MonoBehaviour {
             kickback = -shootingDirection * kickBackAmount;
 
             shootingSpeedTimer = shootingSpeed;
+
+            audioManager.PlayShootingSound();
         }
     }
 
@@ -160,24 +166,26 @@ public class Turret : MonoBehaviour {
             //Left
             angle = 180 + (180-angle);
         }
-
-        angle = Mathf.Clamp(angle, 90 - overshootAngle, 270 + overshootAngle);
         
         if (Mathf.Abs(angle - currentAngle) > 10)
         {
             currentAngle += angle > currentAngle ? rotationSpeed : -rotationSpeed;
+            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
         }
         else if (Mathf.Abs(angle - currentAngle) > 5)
         {
             currentAngle += angle > currentAngle ? rotationSpeed/2f : -rotationSpeed/2f;
+            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
         }
         else if(Mathf.Abs(angle - currentAngle) > 2)
         {
             currentAngle += angle > currentAngle ? rotationSpeed/4f : -rotationSpeed/4f;
+            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
         }
         else if (Mathf.Abs(angle - currentAngle) > 1)
         {
             currentAngle += angle > currentAngle ? rotationSpeed/8f : -rotationSpeed/8f;
+            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
         }
         else
         {
