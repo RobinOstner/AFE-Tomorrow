@@ -20,8 +20,16 @@ public class LilithMovement : MonoBehaviour {
     public bool isAttached;
     public bool isJumping;
     public bool isIdling;
+    public bool isTurning;
 
     public float jumpLockTime;
+
+    public float maxFlipTime;
+    public float flipTimer;
+    public float maxIdleTime;
+    public float idleTimer;
+    public float maxWalkTime;
+    public float walkTimer;
 
     public float jumpProbability;
     public float idleProbability;
@@ -48,6 +56,9 @@ public class LilithMovement : MonoBehaviour {
         animationController = GetComponentInChildren<LilithAnimationController>();
         rigidbody = GetComponent<Rigidbody2D>();
         rigidbody.useFullKinematicContacts = true;
+        flipTimer = maxFlipTime;
+        idleTimer = maxIdleTime;
+        walkTimer = maxWalkTime;
     }
 
     void Update()
@@ -59,9 +70,12 @@ public class LilithMovement : MonoBehaviour {
         
         if (isAttached && !isWalkingAroundCorner)
         {
-            HandleIdling();
+            if (!isTurning)
+            {
+                HandleIdling();
+            }
 
-            if (!isIdling)
+            if (!isIdling && !isTurning)
             {
                 HandleJumping();
 
@@ -92,19 +106,49 @@ public class LilithMovement : MonoBehaviour {
 
     private void HandleFlip()
     {
-        if (Random.Range(0f, 100f) < directionChangeProbability)
+        if (!isTurning)
         {
-            oppositeDirection = !oppositeDirection;
-        }
+            flipTimer -= Time.deltaTime;
 
+            if (flipTimer <= 0)
+            {
+                flipTimer = maxFlipTime + Random.Range(-maxFlipTime/2f, maxFlipTime*7f);
+                isTurning = true;
+                animationController.PlayFlip();
+            }
+        }
+    }
+
+    public void TurnFinished()
+    {
+        isTurning = false;
+        oppositeDirection = !oppositeDirection;
         transform.localScale = oppositeDirection ? new Vector3(-1, 1, 1) : new Vector3(1, 1, 1);
     }
 
     private void HandleIdling()
     {
-        if(Random.Range(0f, 100f) < idleProbability)
+        if (isIdling)
         {
-            isIdling = !isIdling;
+            idleTimer -= Time.deltaTime;
+
+            if (idleTimer <= 0)
+            {
+                idleTimer = maxIdleTime + Random.Range(-maxIdleTime / 2f, maxIdleTime * 5f);
+                isIdling = false;
+                isJumping = false;
+            }
+        }
+        else
+        {
+            walkTimer -= Time.deltaTime;
+
+            if (walkTimer <= 0)
+            {
+                walkTimer = maxWalkTime + Random.Range(-maxWalkTime / 2f, maxWalkTime * 5f);
+                isIdling = true;
+                isJumping = false;
+            }
         }
     }
 
@@ -357,8 +401,6 @@ public class LilithMovement : MonoBehaviour {
         isWalkingAroundCorner = true;
 
         yield return new WaitUntil(() => animationController.innerCornerAnimationFinished);
-
-        Debug.Log("Inner Corner Finished!");
 
         animationController.innerCornerAnimationFinished = false;
 

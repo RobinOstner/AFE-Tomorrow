@@ -53,10 +53,21 @@ public class LilithAnimationController : MonoBehaviour {
 
     public void PlayIdle()
     {
-        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Idle") && !animator.GetCurrentAnimatorStateInfo(0).IsName("Turn"))
         {
             animator.Play("Idle");
         }
+    }
+
+    public void PlayFlip()
+    {
+        animator.Play("Turn");
+    }
+
+    public void TurnFinished()
+    {
+        animator.Play("Idle");
+        movement.TurnFinished();
     }
 
     public void PlayWalk()

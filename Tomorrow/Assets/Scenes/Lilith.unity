@@ -182,6 +182,21 @@ Prefab:
       propertyPath: directionChangeProbability
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114630854723976062, guid: de2706dc4e9b5354d90daec5164ca2cb,
+        type: 2}
+      propertyPath: maxFlipTime
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114630854723976062, guid: de2706dc4e9b5354d90daec5164ca2cb,
+        type: 2}
+      propertyPath: maxIdleTime
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114630854723976062, guid: de2706dc4e9b5354d90daec5164ca2cb,
+        type: 2}
+      propertyPath: maxWalkTime
+      value: 2
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: de2706dc4e9b5354d90daec5164ca2cb, type: 2}
   m_IsPrefabParent: 0
