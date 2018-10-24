@@ -262,7 +262,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1661092526676022}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.09, y: -0.1, z: 0}
+  m_LocalPosition: {x: -4.5246267, y: 2.6942434, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4338632137012732}
@@ -517,11 +517,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lowestPitch: 0.95
   highestPitch: 1.05
-  shootingClip: {fileID: 8300000, guid: 73aec06452306f743a06441c1862e9e8, type: 3}
-  walkingClip: {fileID: 8300000, guid: 1708db8e448daec4a9957e0706a36282, type: 3}
-  runningClip: {fileID: 8300000, guid: 1708db8e448daec4a9957e0706a36282, type: 3}
-  jumpingClip: {fileID: 8300000, guid: 4dd59da6c0e5d654fbcbdc1f95603189, type: 3}
-  landingClip: {fileID: 8300000, guid: dd6826caf875f094bafb24307c3ecdbc, type: 3}
+  shootingClip: {fileID: 8300000, guid: b173c92ccc43db047ac4b4ad6654f345, type: 3}
+  walkingClip: {fileID: 8300000, guid: 092751c85d8a7b340b8c5527683e04e8, type: 3}
+  runningClip: {fileID: 8300000, guid: 092751c85d8a7b340b8c5527683e04e8, type: 3}
+  jumpingClip: {fileID: 8300000, guid: 611f119fb969ad649b847c6a5295692b, type: 3}
+  wallJumpClip: {fileID: 8300000, guid: fac12cb77710ce342a5f419606df81ed, type: 3}
+  landingClip: {fileID: 8300000, guid: 7643dff2420e6244a822cd48dd06f6d8, type: 3}
+  slidingClip: {fileID: 8300000, guid: 7ae7f64c7e8d3574388b18e39ea03fe9, type: 3}
 --- !u!114 &114513550119184928
 MonoBehaviour:
   m_ObjectHideFlags: 1
