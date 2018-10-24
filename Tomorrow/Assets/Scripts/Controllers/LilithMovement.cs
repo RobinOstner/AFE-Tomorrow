@@ -21,6 +21,7 @@ public class LilithMovement : MonoBehaviour {
     public bool isJumping;
     public bool isIdling;
     public bool isTurning;
+    public bool isLanding;
 
     public float jumpLockTime;
 
@@ -68,7 +69,7 @@ public class LilithMovement : MonoBehaviour {
             HandleAttaching();
         }
         
-        if (isAttached && !isWalkingAroundCorner)
+        if (!isLanding && isAttached && !isWalkingAroundCorner)
         {
             if (!isTurning)
             {
@@ -124,6 +125,12 @@ public class LilithMovement : MonoBehaviour {
         isTurning = false;
         oppositeDirection = !oppositeDirection;
         transform.localScale = oppositeDirection ? new Vector3(-1, 1, 1) : new Vector3(1, 1, 1);
+        animationController.AdjustRotation();
+    }
+
+    public void LandingFinished()
+    {
+        isLanding = false;
     }
 
     private void HandleIdling()
@@ -164,6 +171,12 @@ public class LilithMovement : MonoBehaviour {
 
         if (!isDead && surroundingAwareness.canAttach)
         {
+            if (!isAttached)
+            {
+                animationController.PlayLanding();
+                isLanding = true;
+            }
+
             rigidbody.velocity = Vector3.zero;
             rigidbody.isKinematic = true;
             isAttached = true;

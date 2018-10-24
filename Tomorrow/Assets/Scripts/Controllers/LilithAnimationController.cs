@@ -59,6 +59,17 @@ public class LilithAnimationController : MonoBehaviour {
         }
     }
 
+    public void PlayLanding()
+    {
+        animator.Play("Landing");
+    }
+
+    public void LandingFinished()
+    {
+        movement.LandingFinished();
+        animator.Play("Idle");
+    }
+
     public void PlayFlip()
     {
         animator.Play("Turn");
