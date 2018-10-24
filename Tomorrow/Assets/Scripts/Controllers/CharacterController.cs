@@ -285,6 +285,7 @@ public class CharacterController : MonoBehaviour {
                 wallSlideLockTimer = wallSlideLock;
                 isSlidingOnWall = false;
                 animator.Play("Jump");
+                characterAudioManager.PlayWallJumpSound();
             }
 
             characterRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);

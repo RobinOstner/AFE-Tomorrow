@@ -553,6 +553,11 @@ Prefab:
       propertyPath: slidingClip
       value: 
       objectReference: {fileID: 8300000, guid: 7ae7f64c7e8d3574388b18e39ea03fe9, type: 3}
+    - target: {fileID: 114395806226336970, guid: 84a9b83cf94d16c4cb976e72a553e187,
+        type: 2}
+      propertyPath: wallJumpClip
+      value: 
+      objectReference: {fileID: 8300000, guid: fac12cb77710ce342a5f419606df81ed, type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 84a9b83cf94d16c4cb976e72a553e187, type: 2}
   m_IsPrefabParent: 0

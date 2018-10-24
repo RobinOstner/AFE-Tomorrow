@@ -16,6 +16,8 @@ public class CharacterAudioManager : MonoBehaviour {
     [SerializeField]
     private AudioClip jumpingClip;
     [SerializeField]
+    private AudioClip wallJumpClip;
+    [SerializeField]
     private AudioClip landingClip;
     [SerializeField]
     private AudioClip slidingClip;
@@ -72,6 +74,11 @@ public class CharacterAudioManager : MonoBehaviour {
     public void PlayJumpSound()
     {
         PlayClipOneShot(jumpingClip);
+    }
+
+    public void PlayWallJumpSound()
+    {
+        PlayClipOneShot(wallJumpClip);
     }
 
     public void PlayLandingSound()
