@@ -155,6 +155,11 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: de2706dc4e9b5354d90daec5164ca2cb, type: 2}
   m_IsPrefabParent: 0
+--- !u!4 &767563244 stripped
+Transform:
+  m_PrefabParentObject: {fileID: 4197600028101716, guid: de2706dc4e9b5354d90daec5164ca2cb,
+    type: 2}
+  m_PrefabInternal: {fileID: 626557866}
 --- !u!4 &866725879 stripped
 Transform:
   m_PrefabParentObject: {fileID: 4606906762321062, guid: 2dd22c85afb36a9498fee969b295af6a,
@@ -359,7 +364,7 @@ Prefab:
         type: 2}
       propertyPath: target
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 767563244}
     - target: {fileID: 114976748115952990, guid: fdf9e26c4af25a546b8e6d59c2116783,
         type: 2}
       propertyPath: continousShakeMagnitude
