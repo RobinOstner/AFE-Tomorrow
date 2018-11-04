@@ -55,8 +55,18 @@ public class CharacterController : MonoBehaviour {
     private float wallSlideAcceleration;
     [SerializeField]
     private float acceleration;
+    [SerializeField]
+    private float breakSpeed;
     private bool movingBackwards;
     private float targetVelocity;
+
+    private bool isBraking
+    {
+        get
+        {
+            return (targetVelocity > 0 && currentVelocity < 0) || (targetVelocity < 0 && currentVelocity > 0) || targetVelocity == 0 || (targetVelocity > 0 && currentVelocity > 0 && currentVelocity > targetVelocity) || (targetVelocity < 0 && currentVelocity < 0 && currentVelocity < targetVelocity);
+        }
+    }
 
     private Vector2 additionalVelocity;
 
@@ -68,6 +78,9 @@ public class CharacterController : MonoBehaviour {
     [SerializeField]
     private int maxExtraJumps;
     private int extraJumps;
+
+    [SerializeField]
+    private float fallSpeedMultiplier;
     
     private bool facingRight = true;
 
@@ -148,6 +161,14 @@ public class CharacterController : MonoBehaviour {
         ApplyMotion();
     }
 
+    void OnGUI()
+    {
+        GUI.color = Color.black;
+        GUI.Label(new Rect(10, 10, 300, 20), "Current Speed: " + currentVelocity);
+        GUI.Label(new Rect(10, 30, 300, 20), "Target Speed: " + targetVelocity);
+        GUI.Label(new Rect(10, 50, 300, 20), "Braking: " + isBraking);
+    }
+
     private void DisableLilithCollision()
     {
         int lilithLayerValue = (int)Mathf.Log(lilithLayerMask.value, 2);
@@ -157,13 +178,60 @@ public class CharacterController : MonoBehaviour {
 
     private void ApplyMotion()
     {
-        float accelerationFactor = isGrounded ? 1f : 1f;
-        currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * acceleration * accelerationFactor);
+        float accelerationFactor = isBraking ? breakSpeed : acceleration;
+        //currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * accelerationFactor);
         Vector2 horizontal = currentVelocity * Vector2.right;
+
+        if(currentVelocity < targetVelocity && !isBraking)
+        {
+            float newVelocity = currentVelocity + acceleration * Time.deltaTime;
+            if (newVelocity > targetVelocity) { currentVelocity = targetVelocity; }
+            else
+            {
+                currentVelocity = newVelocity;
+            }
+        }
+        if(currentVelocity > targetVelocity && !isBraking)
+        {
+            float newVelocity = currentVelocity - acceleration * Time.deltaTime;
+            if (newVelocity < targetVelocity) { currentVelocity = targetVelocity; }
+            else
+            {
+                currentVelocity = newVelocity;
+            }
+        }
+        if(currentVelocity > targetVelocity && isBraking)
+        {
+            float newVelocity = currentVelocity - breakSpeed * Time.deltaTime;
+            if (newVelocity < targetVelocity) { currentVelocity = targetVelocity; }
+            else
+            {
+                currentVelocity = newVelocity;
+            }
+        }
+        if(currentVelocity < targetVelocity && isBraking)
+        {
+            float newVelocity = currentVelocity + breakSpeed * Time.deltaTime;
+            if (newVelocity > targetVelocity) { currentVelocity = targetVelocity; }
+            else
+            {
+                currentVelocity = newVelocity;
+            }
+        }
+        horizontal = currentVelocity * Vector2.right;
 
         if(isSlidingOnWall && wallSlideDirectionLockTimer < wallSlideDirectionLock) { horizontal = Vector2.zero; }
 
         characterRigidbody.velocity = horizontal + Vector2.up * characterRigidbody.velocity.y + additionalVelocity;
+
+        if (characterRigidbody.velocity.y < 0)
+        {
+            characterRigidbody.velocity += Physics2D.gravity * (fallSpeedMultiplier - 1) * Time.deltaTime;
+        }
+        if(characterRigidbody.velocity.y >= 0 && !Input.GetButton("Jump"))
+        {
+            characterRigidbody.velocity += Physics2D.gravity * (fallSpeedMultiplier - 1) * Time.deltaTime;
+        }
 
         if (isSlidingOnWall)
         {
@@ -224,7 +292,7 @@ public class CharacterController : MonoBehaviour {
 
             if (absoluteSpeed < 0.1f) { absoluteSpeed = 0; }
 
-            if (absoluteSpeed < (walkingSpeed + runningSpeed)/2)
+            if (absoluteSpeed < 4)
             {
                 animator.speed = absoluteSpeed < 0.01f ? 1 : absoluteSpeed/walkingSpeed;
             }
@@ -259,9 +327,9 @@ public class CharacterController : MonoBehaviour {
 
     private bool ShouldPlaySlideAnimation()
     {
-        bool wantsStop = Mathf.Abs(targetVelocity) <= 0.2f && Mathf.Abs(currentVelocity) > (walkingSpeed + runningSpeed)*3/4;
+        bool wantsStop = Mathf.Abs(targetVelocity) <= 0.2f && Mathf.Abs(currentVelocity) > walkingSpeed + (runningSpeed - walkingSpeed)*3/4f;
 
-        bool wantsWalk = playerWantsToWalk && Mathf.Abs(currentVelocity) > (walkingSpeed + runningSpeed)/2;
+        bool wantsWalk = playerWantsToWalk && Mathf.Abs(currentVelocity) > walkingSpeed + (runningSpeed - walkingSpeed) / 2f;
 
         return !isSliding && isGrounded && (wantsStop || wantsWalk);
     }
