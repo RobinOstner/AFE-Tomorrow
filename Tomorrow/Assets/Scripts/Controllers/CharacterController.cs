@@ -8,7 +8,7 @@ public class CharacterController : MonoBehaviour {
 
     public float simulationSpeed;
 
-    private Rigidbody2D characterRigidbody;
+    private Rigidbody2D rigidbody;
     private SpriteRenderer spriteRenderer;
     private Animator animator;
     private CharacterAudioManager characterAudioManager;
@@ -60,6 +60,10 @@ public class CharacterController : MonoBehaviour {
     private bool movingBackwards;
     private float targetVelocity;
 
+    private float maxAirVelocity;
+    [SerializeField]
+    private float maxAirVelocityLerpSpeed;
+
     private bool isBraking
     {
         get
@@ -74,6 +78,8 @@ public class CharacterController : MonoBehaviour {
     private float jumpForce;
     [SerializeField]
     private float wallJumpForce;
+    [SerializeField]
+    private float wallJumpUpwardsForce;
     private bool wantsToJump;
     [SerializeField]
     private int maxExtraJumps;
@@ -122,10 +128,13 @@ public class CharacterController : MonoBehaviour {
     [SerializeField]
     private float wallSlideDirectionLock;
 
+    [SerializeField]
+    private float terminalVelocity;
+
     void Start () {
         instance = this;
 
-        characterRigidbody = GetComponent<Rigidbody2D>();
+        rigidbody = GetComponent<Rigidbody2D>();
         spriteRenderer = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
         characterAudioManager = GetComponent<CharacterAudioManager>();
@@ -164,8 +173,8 @@ public class CharacterController : MonoBehaviour {
     void OnGUI()
     {
         GUI.color = Color.black;
-        GUI.Label(new Rect(10, 10, 300, 20), "Current Speed: " + currentVelocity);
-        GUI.Label(new Rect(10, 30, 300, 20), "Target Speed: " + targetVelocity);
+        GUI.Label(new Rect(10, 10, 300, 20), "Current Speed: " + (int)currentVelocity + "\t/\t" + (int)rigidbody.velocity.y);
+        GUI.Label(new Rect(10, 30, 300, 20), "Target Speed: " + (int)targetVelocity);
         GUI.Label(new Rect(10, 50, 300, 20), "Braking: " + isBraking);
     }
 
@@ -179,7 +188,6 @@ public class CharacterController : MonoBehaviour {
     private void ApplyMotion()
     {
         float accelerationFactor = isBraking ? breakSpeed : acceleration;
-        //currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, Time.deltaTime * accelerationFactor);
         Vector2 horizontal = currentVelocity * Vector2.right;
 
         if(currentVelocity < targetVelocity && !isBraking)
@@ -218,25 +226,41 @@ public class CharacterController : MonoBehaviour {
                 currentVelocity = newVelocity;
             }
         }
-        horizontal = currentVelocity * Vector2.right;
+
+        if (isGrounded)
+        {
+            horizontal = currentVelocity * Vector2.right;
+            maxAirVelocity = Mathf.Abs(currentVelocity);
+        }
+        else
+        {
+            maxAirVelocity = Mathf.Lerp(maxAirVelocity, runningSpeed, Time.deltaTime * maxAirVelocityLerpSpeed);
+            currentVelocity = currentVelocity > 0 ? Mathf.Min(maxAirVelocity, currentVelocity) : Mathf.Max(-maxAirVelocity, currentVelocity);
+            horizontal = currentVelocity * Vector2.right;
+        }
 
         if(isSlidingOnWall && wallSlideDirectionLockTimer < wallSlideDirectionLock) { horizontal = Vector2.zero; }
 
-        characterRigidbody.velocity = horizontal + Vector2.up * characterRigidbody.velocity.y + additionalVelocity;
+        rigidbody.velocity = horizontal + Vector2.up * rigidbody.velocity.y + additionalVelocity;
 
-        if (characterRigidbody.velocity.y < 0)
-        {
-            characterRigidbody.velocity += Physics2D.gravity * (fallSpeedMultiplier - 1) * Time.deltaTime;
-        }
-        if(characterRigidbody.velocity.y >= 0 && !Input.GetButton("Jump"))
-        {
-            characterRigidbody.velocity += Physics2D.gravity * (fallSpeedMultiplier - 1) * Time.deltaTime;
-        }
 
         if (isSlidingOnWall)
         {
-            float verticalSpeed = Mathf.Lerp(characterRigidbody.velocity.y, -wallSlideSpeed, Time.deltaTime * wallSlideAcceleration);
-            characterRigidbody.velocity = Vector2.right * characterRigidbody.velocity.x + Vector2.up * verticalSpeed;
+            //float verticalSpeed = Mathf.Lerp(rigidbody.velocity.y, -wallSlideSpeed, Time.deltaTime * wallSlideAcceleration);
+            //verticalSpeed = Mathf.Min(verticalSpeed, 2);
+            //rigidbody.velocity = Vector2.right * rigidbody.velocity.x + Vector2.up * verticalSpeed;
+            rigidbody.velocity += Physics2D.gravity * (wallSlideAcceleration - 1) * Time.deltaTime;
+        }
+        else
+        {
+            if (rigidbody.velocity.y < 0)
+            {
+                rigidbody.velocity += Physics2D.gravity * (fallSpeedMultiplier - 1) * Time.deltaTime;
+            }
+            if (rigidbody.velocity.y >= 0 && !Input.GetButton("Jump"))
+            {
+                rigidbody.velocity += Physics2D.gravity * (fallSpeedMultiplier - 1) * Time.deltaTime;
+            }
         }
     }
 
@@ -338,26 +362,28 @@ public class CharacterController : MonoBehaviour {
     {
         if (wantsToJump && isGrounded)
         {
-            characterRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            rigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
             animator.Play("Jump");
             isSliding = false;
             characterAudioManager.PlayJumpSound();
         }
-        else if (wantsToJump && extraJumps > 0)
+        else if (wantsToJump && isSlidingOnWall)
         {
             if (isSlidingOnWall)
             {
                 Vector2 wallForce = Vector2.left * wallJumpForce;
                 wallForce *= facingRight ? 1 : -1;
+                currentVelocity = wallForce.x;
                 additionalVelocity += wallForce;
+                float appliedForce = wallJumpUpwardsForce - Mathf.Max(rigidbody.velocity.y, 0);
+                appliedForce = appliedForce > 0 ? appliedForce : 0;
+                rigidbody.AddForce(Vector2.up * appliedForce, ForceMode2D.Impulse);
                 wallSlideLockTimer = wallSlideLock;
+                maxAirVelocity = runningSpeed;
                 isSlidingOnWall = false;
                 animator.Play("Jump");
                 characterAudioManager.PlayWallJumpSound();
             }
-
-            characterRigidbody.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            extraJumps--;
         }
     }
 
@@ -398,6 +424,11 @@ public class CharacterController : MonoBehaviour {
 
         if(!animator.GetBool("Grounded") && isGrounded)
         {
+            if(rigidbody.velocity.y < -terminalVelocity)
+            {
+                transform.position = Respawn.lastRespawnPosition;
+                rigidbody.velocity = Vector2.zero;
+            }
             characterAudioManager.PlayLandingSound();
         }
 
@@ -419,6 +450,7 @@ public class CharacterController : MonoBehaviour {
         
         if(!before && isSlidingOnWall)
         {
+            rigidbody.velocity = Vector2.up * rigidbody.velocity.y *0.2f;
             animator.Play("Wall Slide");
         }
 

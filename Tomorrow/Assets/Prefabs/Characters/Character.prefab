@@ -159,7 +159,7 @@ GameObject:
   m_IsActive: 1
 --- !u!1 &1892110360038568
 GameObject:
-  m_ObjectHideFlags: 0
+  m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
@@ -199,7 +199,7 @@ Transform:
   m_LocalScale: {x: 0.5, y: 5, z: 1}
   m_Children: []
   m_Father: {fileID: 4154625424874194}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -90}
 --- !u!4 &4153124983441726
 Transform:
@@ -212,7 +212,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4154625424874194}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4154625424874194
 Transform:
@@ -224,6 +224,7 @@ Transform:
   m_LocalPosition: {x: 0.94, y: -0.66, z: 0}
   m_LocalScale: {x: 0.2, y: 2, z: 0.01}
   m_Children:
+  - {fileID: 4307539200139294}
   - {fileID: 4116637465619432}
   - {fileID: 4153124983441726}
   m_Father: {fileID: 4985093213695882}
@@ -235,12 +236,12 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1892110360038568}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.69, y: 2, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0.7071068, w: 0.7071068}
+  m_LocalPosition: {x: 0.3, y: -0.55, z: 0}
+  m_LocalScale: {x: 0.5000001, y: 5, z: 100}
   m_Children: []
-  m_Father: {fileID: 4364998386426606}
-  m_RootOrder: 3
+  m_Father: {fileID: 4154625424874194}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4338632137012732
 Transform:
@@ -262,13 +263,12 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1661092526676022}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.16549048, y: -0.6843945, z: 0}
+  m_LocalPosition: {x: 60.63, y: 22.66, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4338632137012732}
   - {fileID: 4985093213695882}
   - {fileID: 4659746359625962}
-  - {fileID: 4307539200139294}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -552,17 +552,21 @@ MonoBehaviour:
     m_Bits: 4096
   groundCheckTransform: {fileID: 4659746359625962}
   groundCheckRadius: 0.1
-  isGrounded: 0
+  isGrounded: 1
   wallCheckTransform: {fileID: 4338632137012732}
   wallCheckRadius: 0.1
-  walkingSpeed: 2
-  runningSpeed: 10
-  wallSlideSpeed: -3
-  wallSlideAcceleration: 3
-  acceleration: 4
-  jumpForce: 15
-  wallJumpForce: 15
+  walkingSpeed: 3
+  runningSpeed: 12
+  wallSlideSpeed: -6
+  wallSlideAcceleration: 0.5
+  acceleration: 15
+  breakSpeed: 18
+  maxAirVelocityLerpSpeed: 1
+  jumpForce: 11
+  wallJumpForce: 6
+  wallJumpUpwardsForce: 15
   maxExtraJumps: 1
+  fallSpeedMultiplier: 2
   shoulder: {fileID: 1455970660908224}
   elbow: {fileID: 1065993948570906}
   hand: {fileID: 1832485454567288}
@@ -575,6 +579,7 @@ MonoBehaviour:
   kickBackAmount: 0.2
   kickBackSpeed: 10
   wallSlideDirectionLock: 0.3
+  terminalVelocity: 40
 --- !u!212 &212260171676929646
 SpriteRenderer:
   m_ObjectHideFlags: 1
