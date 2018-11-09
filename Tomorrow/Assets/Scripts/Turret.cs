@@ -9,6 +9,8 @@ public class Turret : MonoBehaviour {
 
     private TurretAudioManager audioManager;
 
+    public LayerMask targetLayerMask;
+
     public Transform target;
     public Transform weaponPivot;
     public GameObject weaponObject;
@@ -18,14 +20,11 @@ public class Turret : MonoBehaviour {
     public float shootingSpeed;
     private float shootingSpeedTimer;
 
-    public bool engaged;
-
     public float overshootAngle;
 
     private Vector2 targetDirection;
-    private float targetDistance;
 
-    private Vector2 shootingDirection;
+    private Vector3 shootingDirection;
 
     private Vector3 axis;
 
@@ -42,52 +41,222 @@ public class Turret : MonoBehaviour {
     public float kickBackAmount;
     public float kickBackSpeed;
 
-    public bool shoot;
-
     public float shootingTime;
 
     public float shootingCoolDown;
     public bool isCooledDown;
+
+    public Vector3 lastTargetPosition;
+
+    public float angleSearchOffset;
+    public float searchAngle;
+    public float searchSpeed;
+    private bool flip;
+    public float spotLightAngle;
+
+    private Vector3 leftMost;
+
+    public int followDirection;
+
+    public float followTime;
+
+    private float followTimer;
+
+    public float followSpeed;
+
+    public float hitFollowTime;
+    public float hitFollowTimer;
+    public float hitFollowSpeed;
     
 	void Start () {
         animator = GetComponent<Animator>();
         audioManager = GetComponent<TurretAudioManager>();
 	}
-	
-	void Update () {
-        HandleEngaging();
 
-        CalculateShootingDirection();
+    void Update()
+    {
+        CalculateLeftMostDirection();
+        CheckArea();
 
-        if (engaged && weaponObject.activeSelf)
+        if (target != null || followTimer > 0)
         {
-
-            if (isCooledDown)
+            if(target != null)
             {
-                AimAtTarget(rotationSpeed);
-            }
-            else
-            {
-                AimAtTarget(shootingRotationSpeed);
+                followTimer = followTime;
             }
 
-            if (shoot)
-            {
-                Shoot();
-            }
+            Shoot();
+
+            FollowTarget();
+        }
+        else {
+            SearchLastTargetPos();
+            AimAtLastTargetPos();
         }
 
         HandleCoolDownTimer();
         HandleKickBack();
-	}
+
+        followTimer -= Time.deltaTime;
+        hitFollowTimer -= Time.deltaTime;
+    }
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = engaged ? Color.green : Color.red;
-
-        Gizmos.DrawRay(weaponPivot.position, targetDirection*targetDistance);
+        Gizmos.color = Color.green;
         
         Gizmos.DrawWireSphere(weaponPivot.position, maxDistance);
+        
+        
+        Gizmos.DrawWireSphere(lastTargetPosition, 0.5f);
+
+        Gizmos.color = Color.blue;
+
+        Gizmos.DrawRay(weaponPivot.position, shootingDirection * maxDistance);
+        Gizmos.DrawRay(weaponPivot.position, leftMost * maxDistance);
+    }
+
+    private float CalculateAimAngle(Vector3 targetPos)
+    {
+        Vector3 direction = targetPos - weaponPivot.position;
+        targetDirection = direction.normalized;
+
+        axis = transform.rotation * Vector3.down;
+        angle = Vector3.Angle(targetDirection, axis);
+        return angle;
+    }
+
+    private void AimAtLastTargetPos()
+    {
+        float speed = hitFollowTimer <= 0 ? searchSpeed : hitFollowSpeed;
+
+        float angle = CalculateAimAngle(lastTargetPosition);
+
+        angle += hitFollowTimer <= 0 ? angleSearchOffset : 0;
+
+        if (LeftRightTest.CheckLeftRight(axis, Vector3.forward, lastTargetPosition - weaponPivot.position) < 0)
+        {
+            //Left
+            angle = 180 + (180 - angle);
+        }
+
+        if (Mathf.Abs(angle - currentAngle) > 10)
+        {
+            currentAngle += (angle > currentAngle ? speed : -speed) * Time.deltaTime;
+            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
+        }
+        else if (Mathf.Abs(angle - currentAngle) > 5)
+        {
+            currentAngle += (angle > currentAngle ? speed / 2f : -speed / 2f) * Time.deltaTime;
+            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
+        }
+        else if (Mathf.Abs(angle - currentAngle) > 2)
+        {
+            currentAngle += (angle > currentAngle ? speed / 4f : -speed / 4f) * Time.deltaTime;
+            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
+        }
+        else if (Mathf.Abs(angle - currentAngle) > 1)
+        {
+            currentAngle += (angle > currentAngle ? speed / 8f : -speed / 8f) * Time.deltaTime;
+            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
+        }
+
+        weaponObject.transform.rotation = Quaternion.identity;
+        weaponObject.transform.Rotate(Vector3.forward, currentAngle + transform.rotation.eulerAngles.z + 90);
+
+        shootingDirection = Quaternion.Euler(0, 0, currentAngle) * axis;
+    }
+
+    private void SearchLastTargetPos()
+    {
+        if (!flip)
+        {
+            angleSearchOffset += Time.deltaTime * searchSpeed;
+        }
+        else
+        {
+            angleSearchOffset -= Time.deltaTime * searchSpeed;
+        }
+
+        if(Mathf.Abs(angleSearchOffset) >= searchAngle)
+        {
+            flip = !flip;
+        }
+    }
+
+    private void CheckArea()
+    {
+        Collider2D collider = null;
+        target = null;
+
+        int firstIndex = -1;
+        int lastIndex = -1;
+
+        for(int i=0; i < spotLightAngle; i++)
+        {
+            RaycastHit2D hit = Physics2D.Raycast(weaponPivot.position, Quaternion.Euler(0, 0, -i) * leftMost, maxDistance, targetLayerMask);
+
+            if(hit.collider != null && hit.collider.tag.Equals("Player"))
+            {
+                if(firstIndex == -1) { firstIndex = i; }
+                lastIndex = i;
+
+                if(firstIndex != lastIndex)
+                {
+                    collider = hit.collider;
+                    target = collider.transform;
+                }
+            }
+        }
+        if (firstIndex != lastIndex)
+        {
+            float index = firstIndex + (lastIndex - firstIndex) / 2f;
+
+            if (index <= spotLightAngle * 0.45f)
+            {
+                followDirection = -1;
+            }
+            else if (index >= spotLightAngle * 0.55f)
+            {
+                followDirection = 1;
+            }
+            else
+            {
+                followDirection = 0;
+            }
+        }
+    }
+
+    private Vector3 CalculateLeftMostDirection()
+    {
+        leftMost = Quaternion.Euler(0,0,spotLightAngle/2f) * shootingDirection;
+        return leftMost;
+    }
+
+    private void FollowTarget()
+    {
+        float angle = currentAngle;
+
+        switch (followDirection)
+        {
+            case -1:
+                angle += followSpeed * Time.deltaTime ;
+                break;
+            case 1:
+                angle += -followSpeed * Time.deltaTime;
+                break;
+            default:
+                break;
+        }
+       
+
+        currentAngle = angle;
+        currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
+
+        weaponObject.transform.rotation = Quaternion.identity;
+        weaponObject.transform.Rotate(Vector3.forward, currentAngle + transform.rotation.eulerAngles.z + 90);
+
+        shootingDirection = Quaternion.Euler(0, 0, currentAngle) * axis;
     }
 
     private void HandleCoolDownTimer()
@@ -117,112 +286,9 @@ public class Turret : MonoBehaviour {
             audioManager.PlayShootingSound();
         }
     }
-
-    private void HandleEngaging()
+    public void Hit(Vector3 direction)
     {
-        engaged = targetDistance < maxDistance && angle >= 90 - overshootAngle && angle <= 270 + overshootAngle;
-
-        if (!engaged && currentAngle <= 269)
-        {
-            if (Mathf.Abs(270 - currentAngle) > 10)
-            {
-                currentAngle += 270 > currentAngle ? rotationSpeed : -rotationSpeed;
-            }
-            else if (Mathf.Abs(270 - currentAngle) > 5)
-            {
-                currentAngle += 270 > currentAngle ? rotationSpeed / 2f : -rotationSpeed / 2f;
-            }
-            else if (Mathf.Abs(270 - currentAngle) > 2)
-            {
-                currentAngle += 270 > currentAngle ? rotationSpeed / 4f : -rotationSpeed / 4f;
-            }
-            else if (Mathf.Abs(270 - currentAngle) > 1)
-            {
-                currentAngle += 270 > currentAngle ? rotationSpeed / 8f : -rotationSpeed / 8f;
-            }
-            weaponObject.transform.rotation = Quaternion.identity;
-            weaponObject.transform.Rotate(Vector3.forward, currentAngle + transform.rotation.eulerAngles.z + 90);
-        }
-        else
-        {
-            animator.SetBool("Engaged", engaged);
-        }
-    }
-
-    public void OpeningFinished()
-    {
-        weaponObject.SetActive(true);
-    }
-
-    public void ClosingStarted()
-    {
-        weaponObject.SetActive(false);
-    }
-
-    private void CalculateShootingDirection()
-    {
-        Vector3 direction = target.position - weaponPivot.position;
-        targetDistance = direction.magnitude;
-        targetDirection = direction.normalized;
-
-        axis = transform.rotation * Vector3.down;
-        angle = Vector3.Angle(targetDirection, axis);
-    }
-
-    private void AimAtTarget(float rotationSpeed)
-    {
-
-        if(LeftRightTest.CheckLeftRight(axis, Vector3.forward, target.position - weaponPivot.position) < 0)
-        {
-            //Left
-            angle = 180 + (180-angle);
-        }
-        
-        if (Mathf.Abs(angle - currentAngle) > 10)
-        {
-            currentAngle += angle > currentAngle ? rotationSpeed : -rotationSpeed;
-            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
-        }
-        else if (Mathf.Abs(angle - currentAngle) > 5)
-        {
-            currentAngle += angle > currentAngle ? rotationSpeed/2f : -rotationSpeed/2f;
-            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
-        }
-        else if(Mathf.Abs(angle - currentAngle) > 2)
-        {
-            currentAngle += angle > currentAngle ? rotationSpeed/4f : -rotationSpeed/4f;
-            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
-        }
-        else if (Mathf.Abs(angle - currentAngle) > 1)
-        {
-            currentAngle += angle > currentAngle ? rotationSpeed/8f : -rotationSpeed/8f;
-            currentAngle = Mathf.Clamp(currentAngle, 90 - overshootAngle, 270 + overshootAngle);
-        }
-        else
-        {
-            StartCoroutine(ShootAtTarget());
-        }
-
-        weaponObject.transform.rotation = Quaternion.identity;
-        weaponObject.transform.Rotate(Vector3.forward, currentAngle + transform.rotation.eulerAngles.z + 90);
-
-        shootingDirection = Quaternion.Euler(0, 0, currentAngle) * axis;
-    }
-
-    private IEnumerator ShootAtTarget()
-    {
-        if (isCooledDown)
-        {
-            isCooledDown = false;
-            shoot = true;
-
-            yield return new WaitForSeconds(shootingTime);
-
-            shoot = false;
-
-            yield return new WaitForSeconds(shootingCoolDown);
-
-            isCooledDown = true;
-        }
+        lastTargetPosition = weaponPivot.position - direction.normalized * 10;
+        hitFollowTimer = hitFollowTime;
     }
 }

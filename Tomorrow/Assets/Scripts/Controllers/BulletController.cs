@@ -60,6 +60,10 @@ public class BulletController : MonoBehaviour {
         {
             case "Lilith":
                 break;
+            case "Turret":
+                col.collider.GetComponentInParent<Turret>().Hit(direction);
+                Instantiate(particles, transform.position, Quaternion.identity);
+                break;
             default:
                 Instantiate(particles, transform.position, Quaternion.identity);
                 break;

@@ -13,6 +13,91 @@ public class CharacterController : MonoBehaviour {
     private Animator animator;
     private CharacterAudioManager characterAudioManager;
 
+
+    [Header("Environment")]
+    [SerializeField]
+    private float groundCheckRadius;
+    [SerializeField]
+    private float wallCheckRadius;
+    public bool isGrounded;
+    private bool isTouchingWall;
+    private bool isSlidingOnWall;
+    private const float wallSlideLock = 0.5f;
+    private float wallSlideLockTimer;
+
+    private float horizontalInput;
+    private bool playerWantsToWalk;
+    private bool isWalking;
+    private float currentVelocity;
+    private bool wantsToShoot;
+
+    private bool wantsToJump;
+    private bool movingBackwards;
+    private bool facingRight = true;
+    private bool isBraking
+    {
+        get
+        {
+            return (targetVelocity > 0 && currentVelocity < 0) || (targetVelocity < 0 && currentVelocity > 0) || targetVelocity == 0 || (targetVelocity > 0 && currentVelocity > 0 && currentVelocity > targetVelocity) || (targetVelocity < 0 && currentVelocity < 0 && currentVelocity < targetVelocity);
+        }
+    }
+    private bool isSliding;
+
+    [Header("Movement Settings")]
+    [SerializeField]
+    private float walkingSpeed;
+    [SerializeField]
+    private float runningSpeed;
+    [SerializeField]
+    private float acceleration;
+    [SerializeField]
+    private float breakSpeed;
+    [SerializeField]
+    private float jumpForce;
+    private float maxAirVelocity;
+    [SerializeField]
+    private float maxAirVelocityLerpSpeed;
+    [SerializeField]
+    private float fallSpeedMultiplier;
+    [SerializeField]
+    private float wallJumpForce;
+    [SerializeField]
+    private float wallJumpUpwardsForce;
+
+    [SerializeField]
+    private float wallSlideSpeed;
+    [SerializeField]
+    private float wallSlideAcceleration;
+    private float wallSlideDirectionLockTimer;
+    [SerializeField]
+    private float wallSlideDirectionLock;
+
+    private float targetVelocity;
+
+    private Vector2 additionalVelocity;
+
+    [SerializeField]
+    private int maxExtraJumps;
+    private int extraJumps;
+
+    [SerializeField]
+    private float shootingCoolDown;
+    private float shootingCoolDownTimer;
+    [SerializeField]
+    private float bulletSpeed;
+
+    private Vector2 kickBackPosition;
+    public float kickBackAmount;
+    public float kickBackSpeed;
+
+    [SerializeField]
+    private float terminalVelocity;
+
+    private Vector3 mousePosition;
+    private Vector3 mousePositionWorld;
+    private Vector3 shootingDirection;
+
+    [Header("Externals")]
     [SerializeField]
     private SpriteRenderer weaponSpriteRenderer;
     [SerializeField]
@@ -30,70 +115,7 @@ public class CharacterController : MonoBehaviour {
     [SerializeField]
     private Transform groundCheckTransform;
     [SerializeField]
-    private float groundCheckRadius;
-    public bool isGrounded;
-    [SerializeField]
     private Transform wallCheckTransform;
-    [SerializeField]
-    private float wallCheckRadius;
-    private bool isTouchingWall;
-    private bool isSlidingOnWall;
-    private const float wallSlideLock = 0.5f;
-    private float wallSlideLockTimer;
-
-    private float horizontalInput;
-    private bool playerWantsToWalk;
-    private bool isWalking;
-    private float currentVelocity;
-    [SerializeField]
-    private float walkingSpeed;
-    [SerializeField]
-    private float runningSpeed;
-    [SerializeField]
-    private float wallSlideSpeed;
-    [SerializeField]
-    private float wallSlideAcceleration;
-    [SerializeField]
-    private float acceleration;
-    [SerializeField]
-    private float breakSpeed;
-    private bool movingBackwards;
-    private float targetVelocity;
-
-    private float maxAirVelocity;
-    [SerializeField]
-    private float maxAirVelocityLerpSpeed;
-
-    private bool isBraking
-    {
-        get
-        {
-            return (targetVelocity > 0 && currentVelocity < 0) || (targetVelocity < 0 && currentVelocity > 0) || targetVelocity == 0 || (targetVelocity > 0 && currentVelocity > 0 && currentVelocity > targetVelocity) || (targetVelocity < 0 && currentVelocity < 0 && currentVelocity < targetVelocity);
-        }
-    }
-
-    private Vector2 additionalVelocity;
-
-    [SerializeField]
-    private float jumpForce;
-    [SerializeField]
-    private float wallJumpForce;
-    [SerializeField]
-    private float wallJumpUpwardsForce;
-    private bool wantsToJump;
-    [SerializeField]
-    private int maxExtraJumps;
-    private int extraJumps;
-
-    [SerializeField]
-    private float fallSpeedMultiplier;
-    
-    private bool facingRight = true;
-
-    private Vector3 mousePosition;
-    private Vector3 mousePositionWorld;
-    private Vector3 shootingDirection;
-
     [SerializeField]
     private GameObject shoulder;
     [SerializeField]
@@ -104,32 +126,13 @@ public class CharacterController : MonoBehaviour {
     private GameObject upperArm;
     [SerializeField]
     private GameObject lowerArm;
+    [SerializeField]
+    private GameObject bulletPrefab;
 
     private float upperArmAngle;
     private float lowerArmAngle;
     private float upperAngleOffset;
 
-    [SerializeField]
-    private GameObject bulletPrefab;
-    private bool wantsToShoot;
-    [SerializeField]
-    private float shootingCoolDown;
-    private float shootingCoolDownTimer;
-    [SerializeField]
-    private float bulletSpeed;
-    
-    private Vector2 kickBackPosition;
-    public float kickBackAmount;
-    public float kickBackSpeed;
-
-    private bool isSliding;
-    
-    private float wallSlideDirectionLockTimer;
-    [SerializeField]
-    private float wallSlideDirectionLock;
-
-    [SerializeField]
-    private float terminalVelocity;
 
     void Start () {
         instance = this;
@@ -374,7 +377,7 @@ public class CharacterController : MonoBehaviour {
                 Vector2 wallForce = Vector2.left * wallJumpForce;
                 wallForce *= facingRight ? 1 : -1;
                 currentVelocity = wallForce.x;
-                additionalVelocity += wallForce;
+                //additionalVelocity += wallForce;
                 float appliedForce = wallJumpUpwardsForce - Mathf.Max(rigidbody.velocity.y, 0);
                 appliedForce = appliedForce > 0 ? appliedForce : 0;
                 rigidbody.AddForce(Vector2.up * appliedForce, ForceMode2D.Impulse);
