@@ -173,14 +173,6 @@ public class CharacterController : MonoBehaviour {
         ApplyMotion();
     }
 
-    void OnGUI()
-    {
-        GUI.color = Color.black;
-        GUI.Label(new Rect(10, 10, 300, 20), "Current Speed: " + (int)currentVelocity + "\t/\t" + (int)rigidbody.velocity.y);
-        GUI.Label(new Rect(10, 30, 300, 20), "Target Speed: " + (int)targetVelocity);
-        GUI.Label(new Rect(10, 50, 300, 20), "Braking: " + isBraking);
-    }
-
     private void DisableLilithCollision()
     {
         int lilithLayerValue = (int)Mathf.Log(lilithLayerMask.value, 2);
