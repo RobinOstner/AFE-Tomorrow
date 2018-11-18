@@ -13,7 +13,6 @@ public class CharacterController : MonoBehaviour {
     private Animator animator;
     private CharacterAudioManager characterAudioManager;
 
-
     [Header("Environment")]
     [SerializeField]
     private float groundCheckRadius;
@@ -171,6 +170,11 @@ public class CharacterController : MonoBehaviour {
     void FixedUpdate()
     {
         ApplyMotion();
+    }
+
+    private void OnGUI()
+    {
+        GUI.Label(new Rect(10, 10, 500, 50), "FPS: " + (int)(1 / Time.deltaTime));
     }
 
     private void DisableLilithCollision()
